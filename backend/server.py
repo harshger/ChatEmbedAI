@@ -88,6 +88,19 @@ class TeamInvite(BaseModel):
     email: str
     role: str = 'member'
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class VerifyEmailRequest(BaseModel):
+    token: str
+
+class ResendVerificationRequest(BaseModel):
+    email: str
+
 # ---------- CHATBOT TEMPLATES ----------
 CHATBOT_TEMPLATES = [
     {
@@ -410,7 +423,15 @@ async def register(data: UserRegister):
     })
     
     # Mock: Log email verification (email is mocked)
-    logger.info(f"[MOCK EMAIL] Verification email sent to {data.email}")
+    verify_token = f"verify_{uuid.uuid4().hex}"
+    await db.verification_tokens.insert_one({
+        'token': verify_token,
+        'user_id': user_id,
+        'type': 'email_verification',
+        'expires_at': (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    })
+    logger.info(f"[MOCK EMAIL] Verification email sent to {data.email} - Token: {verify_token}")
     
     return {
         'user_id': user_id,
@@ -419,6 +440,8 @@ async def register(data: UserRegister):
         'plan': 'free',
         'token': token,
         'session_token': session_token,
+        'email_verified': False,
+        'mock_verify_token': verify_token,
     }
 
 @api_router.post("/auth/login")
@@ -444,6 +467,7 @@ async def login(data: UserLogin):
         'company_name': user.get('company_name', ''),
         'token': token,
         'session_token': session_token,
+        'email_verified': user.get('email_verified', False),
     }
 
 @api_router.post("/auth/google-session")
@@ -531,6 +555,7 @@ async def get_me(user=Depends(get_current_user)):
         'picture': user.get('picture', ''),
         'marketing_consent': user.get('marketing_consent', False),
         'created_at': user.get('created_at', ''),
+        'email_verified': user.get('email_verified', False),
     }
 
 @api_router.post("/auth/logout")
@@ -543,6 +568,82 @@ async def logout(request: Request):
         token = auth_header[7:]
         await db.user_sessions.delete_one({'session_token': token})
     return {"ok": True}
+
+# ---------- EMAIL VERIFICATION ----------
+@api_router.post("/auth/verify-email")
+async def verify_email(data: VerifyEmailRequest):
+    token_doc = await db.verification_tokens.find_one({'token': data.token, 'type': 'email_verification'}, {'_id': 0})
+    if not token_doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification token")
+    expires_at = token_doc.get('expires_at', '')
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Verification token has expired")
+    await db.users.update_one({'user_id': token_doc['user_id']}, {'$set': {'email_verified': True, 'updated_at': datetime.now(timezone.utc).isoformat()}})
+    await db.verification_tokens.delete_one({'token': data.token})
+    return {"ok": True, "message": "Email verified successfully"}
+
+@api_router.post("/auth/resend-verification")
+async def resend_verification(data: ResendVerificationRequest):
+    user = await db.users.find_one({'email': data.email}, {'_id': 0})
+    if not user:
+        return {"ok": True, "message": "If an account exists, a verification email has been sent."}
+    if user.get('email_verified'):
+        return {"ok": True, "message": "Email already verified."}
+    await db.verification_tokens.delete_many({'user_id': user['user_id'], 'type': 'email_verification'})
+    verify_token = f"verify_{uuid.uuid4().hex}"
+    await db.verification_tokens.insert_one({
+        'token': verify_token,
+        'user_id': user['user_id'],
+        'type': 'email_verification',
+        'expires_at': (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    })
+    logger.info(f"[MOCK EMAIL] Verification link: /verify-email?token={verify_token}")
+    return {"ok": True, "message": "Verification email sent.", "mock_token": verify_token}
+
+# ---------- PASSWORD RESET ----------
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordRequest):
+    user = await db.users.find_one({'email': data.email}, {'_id': 0})
+    if not user:
+        return {"ok": True, "message": "If an account with that email exists, a reset link has been sent."}
+    if not user.get('password_hash'):
+        return {"ok": True, "message": "This account uses Google login. Please sign in with Google."}
+    await db.verification_tokens.delete_many({'user_id': user['user_id'], 'type': 'password_reset'})
+    reset_token = f"reset_{uuid.uuid4().hex}"
+    await db.verification_tokens.insert_one({
+        'token': reset_token,
+        'user_id': user['user_id'],
+        'type': 'password_reset',
+        'expires_at': (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    })
+    logger.info(f"[MOCK EMAIL] Password reset link: /reset-password?token={reset_token}")
+    return {"ok": True, "message": "If an account with that email exists, a reset link has been sent.", "mock_token": reset_token}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordRequest):
+    token_doc = await db.verification_tokens.find_one({'token': data.token, 'type': 'password_reset'}, {'_id': 0})
+    if not token_doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token")
+    expires_at = token_doc.get('expires_at', '')
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset token has expired")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    new_hash = hash_password(data.new_password)
+    await db.users.update_one({'user_id': token_doc['user_id']}, {'$set': {'password_hash': new_hash, 'updated_at': datetime.now(timezone.utc).isoformat()}})
+    await db.verification_tokens.delete_one({'token': data.token})
+    await db.user_sessions.delete_many({'user_id': token_doc['user_id']})
+    return {"ok": True, "message": "Password reset successfully. Please login with your new password."}
 
 # ---------- CHATBOT ROUTES ----------
 @api_router.post("/chatbots")
@@ -953,17 +1054,78 @@ async def get_analytics(user=Depends(get_current_user)):
     
     messages = await db.messages.find({'chatbot_id': {'$in': chatbot_ids}}, {'_id': 0}).to_list(10000)
     
-    # Basic analytics
+    # Messages per day
     daily_counts = {}
     for msg in messages:
         if msg.get('role') == 'user':
             day = msg.get('created_at', '')[:10]
-            daily_counts[day] = daily_counts.get(day, 0) + 1
+            if day:
+                daily_counts[day] = daily_counts.get(day, 0) + 1
+    
+    # Top 10 questions (user messages by frequency)
+    question_counts = {}
+    for msg in messages:
+        if msg.get('role') == 'user':
+            content = msg.get('content', '').strip()
+            if content and content != '[deleted]':
+                key = content[:100]
+                question_counts[key] = question_counts.get(key, 0) + 1
+    top_questions = sorted(question_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+    
+    # Language distribution (detect from content patterns)
+    language_counts = {}
+    german_words = {'der', 'die', 'das', 'und', 'ist', 'ich', 'ein', 'eine', 'von', 'für', 'mit', 'auf', 'nicht', 'den', 'wir', 'sie', 'sind', 'hat', 'wie', 'bitte', 'danke', 'hallo', 'guten'}
+    english_words = {'the', 'and', 'is', 'are', 'was', 'for', 'with', 'not', 'you', 'this', 'that', 'have', 'from', 'they', 'been', 'what', 'how', 'when', 'where', 'hello', 'please', 'thank'}
+    french_words = {'le', 'la', 'les', 'des', 'est', 'une', 'que', 'pour', 'dans', 'pas', 'qui', 'sur', 'avec', 'tout', 'bonjour', 'merci'}
+    spanish_words = {'el', 'la', 'los', 'las', 'del', 'una', 'por', 'con', 'para', 'que', 'hola', 'gracias'}
+    
+    for msg in messages:
+        if msg.get('role') == 'user':
+            content = msg.get('content', '').lower()
+            words = set(content.split())
+            de_score = len(words & german_words)
+            en_score = len(words & english_words)
+            fr_score = len(words & french_words)
+            es_score = len(words & spanish_words)
+            scores = {'Deutsch': de_score, 'English': en_score, 'Français': fr_score, 'Español': es_score}
+            best = max(scores, key=scores.get)
+            if scores[best] > 0:
+                language_counts[best] = language_counts.get(best, 0) + 1
+            else:
+                language_counts['Deutsch'] = language_counts.get('Deutsch', 0) + 1
+    
+    # Peak hours
+    hour_counts = {}
+    for msg in messages:
+        if msg.get('role') == 'user':
+            created = msg.get('created_at', '')
+            if len(created) >= 13:
+                try:
+                    hour = int(created[11:13])
+                    hour_counts[hour] = hour_counts.get(hour, 0) + 1
+                except ValueError:
+                    pass
+    peak_hours = [{'hour': h, 'count': hour_counts.get(h, 0)} for h in range(24)]
+    
+    # Per-chatbot stats
+    chatbot_stats = []
+    for bot in chatbots:
+        bot_msgs = [m for m in messages if m.get('chatbot_id') == bot['chatbot_id']]
+        chatbot_stats.append({
+            'chatbot_id': bot['chatbot_id'],
+            'business_name': bot.get('business_name', ''),
+            'total_messages': len(bot_msgs),
+            'user_messages': len([m for m in bot_msgs if m.get('role') == 'user']),
+        })
     
     return {
         'messages_per_day': [{'date': k, 'count': v} for k, v in sorted(daily_counts.items())],
         'total_messages': len(messages),
         'total_chatbots': len(chatbots),
+        'top_questions': [{'question': q, 'count': c} for q, c in top_questions],
+        'language_distribution': [{'language': k, 'count': v} for k, v in sorted(language_counts.items(), key=lambda x: x[1], reverse=True)],
+        'peak_hours': peak_hours,
+        'chatbot_stats': chatbot_stats,
     }
 
 # ---------- BILLING ----------

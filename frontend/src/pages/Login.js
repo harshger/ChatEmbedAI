@@ -56,6 +56,9 @@ export default function Login() {
               <div>
                 <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">{t.auth.password}</Label>
                 <Input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="rounded-none border-gray-300 focus:ring-2 focus:ring-[#002FA7] focus:border-transparent" data-testid="login-password" />
+                <div className="mt-2 text-right">
+                  <Link to="/forgot-password" className="text-xs text-[#002FA7] font-bold hover:underline" data-testid="forgot-password-link">{t.auth.forgot_password}</Link>
+                </div>
               </div>
               <Button type="submit" disabled={loading} className="w-full bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none py-3 font-bold" data-testid="login-submit-button">
                 {loading ? '...' : t.auth.login_btn}

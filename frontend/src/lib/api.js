@@ -41,6 +41,12 @@ export const api = {
   exportData: () => fetch(`${API}/user/export`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
   deleteAccount: (confirmation) => fetch(`${API}/user/account`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify({ confirmation }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
 
+  // Auth - Email Verification & Password Reset
+  verifyEmail: (token) => fetch(`${API}/auth/verify-email`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  resendVerification: (email) => fetch(`${API}/auth/resend-verification`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  forgotPassword: (email) => fetch(`${API}/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  resetPassword: (token, new_password) => fetch(`${API}/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, new_password }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
   // Templates
   getTemplates: () => fetch(`${API}/templates`).then(r => { if (!r.ok) throw r; return r.json(); }),
   createFromTemplate: (data) => fetch(`${API}/chatbots/from-template`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),

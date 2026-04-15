@@ -16,6 +16,8 @@ export default function Signup() {
   const [form, setForm] = useState({ email: '', password: '', full_name: '', company_name: '', terms_accepted: false, marketing_consent: false });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  const [mockVerifyToken, setMockVerifyToken] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,7 +27,12 @@ export default function Signup() {
     try {
       const data = await api.register(form);
       login(data, data.session_token);
-      navigate('/dashboard');
+      if (data.mock_verify_token) {
+        setMockVerifyToken(data.mock_verify_token);
+        setRegistered(true);
+      } else {
+        navigate('/dashboard');
+      }
     } catch {
       setError('Registration failed. Email may already be registered.');
     } finally {
@@ -45,6 +52,27 @@ export default function Signup() {
       <div className="flex items-center justify-center pt-32 pb-32 px-6">
         <div className="w-full max-w-md">
           <div className="border border-gray-200 bg-white p-8" data-testid="signup-form">
+            {registered ? (
+              <div className="text-center space-y-4" data-testid="signup-success">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                </div>
+                <h2 className="font-clash text-2xl font-bold tracking-tight text-[#0A0A0A]">{t.auth.signup_title} — {t.auth.verify_banner}</h2>
+                <p className="text-sm text-[#4B5563]">We sent a verification email to <strong>{form.email}</strong>.</p>
+                {mockVerifyToken && (
+                  <div className="bg-[#F9FAFB] border border-gray-200 p-4 text-left">
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2">Demo Mode — Verify Link</p>
+                    <Link to={`/verify-email?token=${mockVerifyToken}`} className="text-[#002FA7] text-sm font-bold hover:underline break-all" data-testid="mock-verify-link">
+                      Click here to verify email
+                    </Link>
+                  </div>
+                )}
+                <button onClick={() => navigate('/dashboard')} className="mt-4 bg-[#002FA7] text-white px-6 py-3 font-bold hover:bg-[#0040D6] transition-colors w-full" data-testid="go-to-dashboard-btn">
+                  Go to Dashboard
+                </button>
+              </div>
+            ) : (
+              <>
             <h1 className="font-clash text-3xl font-bold tracking-tight text-[#0A0A0A] mb-8">{t.auth.signup_title}</h1>
             {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 mb-6" data-testid="signup-error">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -89,6 +117,8 @@ export default function Signup() {
             <p className="mt-6 text-sm text-[#4B5563] text-center">
               {t.auth.has_account} <Link to="/login" className="text-[#002FA7] font-bold hover:underline">{t.auth.login_title}</Link>
             </p>
+              </>
+            )}
           </div>
         </div>
       </div>

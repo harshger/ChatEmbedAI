@@ -55,31 +55,51 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
   - DNS TXT: `chatembed-verify=TOKEN`
 - [x] Dashboard domain verification banner (yellow, links to verify page)
 - [x] Public chatbot endpoint returns domain_verified and allowed_domain
-- [x] Google OAuth users get empty domain fields, can set website later
-- [x] Domain verification endpoints: GET /api/domain/status, POST /api/domain/init, POST /api/domain/verify
-- [x] Sidebar "Domain" link in dashboard navigation
+
+### Phase 6 — Conversation History & GDPR Hardening (Apr 15, 2026)
+- [x] Conversation History page (/dashboard/conversations) with:
+  - Search by keyword, filter by chatbot/date range
+  - Paginated list of conversations grouped by session_id
+  - Click-to-view full conversation thread in dialog
+  - CSV export with GDPR consent logging
+- [x] Always-visible usage bar on dashboard (messages used/limit with color coding)
+- [x] Message auto-delete cleanup endpoint (POST /api/maintenance/cleanup-expired) for GDPR 90-day retention
+- [x] IP anonymization (SHA-256 hash at message collection - already in place since Phase 1)
+- [x] Account deletion with 30-day grace period (already in place since Phase 1)
+- [x] Sidebar navigation updated with Conversations link
 
 ## Prioritized Backlog
 
+### P0 (Critical)
+- [ ] Backend Refactoring — Break server.py (~1800 lines) into modular routers:
+  - routes/auth.py, routes/chatbots.py, routes/domain.py, routes/analytics.py, routes/billing.py, routes/conversations.py
+
 ### P1 (High)
-- [ ] Conversation History page — browse/search/filter past chatbot conversations, CSV export
+- [ ] User Rights Center — "Download my data" JSON export from /account/privacy page
 - [ ] Invoice PDF generation (German tax §257 HGB)
-- [ ] Data retention jobs (auto-delete messages after 90 days)
+- [ ] Data retention cron job (auto-delete messages after 90 days on schedule)
 - [ ] Wire Ollama into chat endpoint based on ai_config
+- [ ] Unanswered question logging and tracking
 
 ### P2 (Medium)
-- [ ] CSV export for analytics
+- [ ] CSV export for analytics page
 - [ ] Embed.js domain lock — widget only loads on verified domain
 - [ ] Docker Compose deployment setup
 - [ ] Domain whitelist per chatbot (CORS)
+- [ ] Custom widget logo upload
+- [ ] REST API access for Pro/Agentur plans
 
 ### P3 (Nice to have)
 - [ ] 2FA support, Redis caching, robots.txt/sitemap
 - [ ] More templates (Hotel, Autowerkstatt, Steuerberater)
 - [ ] Backup scripts
+- [ ] Sub-account management (Agency)
+- [ ] Custom chat domain (Agency)
+- [ ] Status page
 
 ## Next Tasks
-1. Conversation History page (browse, search, filter, CSV export)
-2. Invoice PDF generation (German tax compliant)
-3. Data retention jobs
-4. Embed.js domain lock (widget only on verified domain)
+1. Backend Refactoring (server.py → modular routes)
+2. User Rights Center (download my data JSON)
+3. Invoice PDF generation
+4. Unanswered question logging
+5. Embed.js domain lock

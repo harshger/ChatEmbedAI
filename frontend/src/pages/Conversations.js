@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { MessageSquare, Search, Download, ChevronLeft, ChevronRight, Calendar, Bot, User, X, Filter } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
@@ -348,6 +348,7 @@ export default function Conversations() {
               <DialogTitle className="font-clash text-xl font-bold text-[#0A0A0A]">
                 {t.conversations?.detail_title || 'Conversation'}
               </DialogTitle>
+              <DialogDescription className="sr-only">View conversation messages</DialogDescription>
             </DialogHeader>
             {selectedSession && (
               <ConversationThread session={selectedSession} onClose={() => setSelectedSession(null)} />

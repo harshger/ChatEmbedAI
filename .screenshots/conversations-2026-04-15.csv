@@ -1,0 +1,13 @@
+session_id,chatbot_name,role,message,timestamp
+test_session_001,Test Bäckerei München,user,Wann haben Sie geöffnet?,2026-04-15T12:48:03.124835+00:00
+test_session_001,Test Bäckerei München,assistant,"Unsere Öffnungszeiten sind: Montag bis Freitag 6:00-18:00, Samstag 6:00-14:00, Sonntag 7:00-12:00 Uhr.",2026-04-15T12:50:03.124835+00:00
+test_session_001,Test Bäckerei München,user,Liefern Sie auch?,2026-04-15T12:52:03.124835+00:00
+test_session_001,Test Bäckerei München,assistant,"Ja, wir liefern ab einem Bestellwert von 30€ im Umkreis von 5 km. Die Liefergebühr beträgt 3,50€.",2026-04-15T12:54:03.124835+00:00
+test_session_002,Test Bäckerei München,user,What kind of bread do you sell?,2026-04-15T13:48:03.124843+00:00
+test_session_002,Test Bäckerei München,assistant,"We offer fresh bread including sourdough, whole grain, farmer's bread, and ciabatta. All baked fresh daily!",2026-04-15T13:50:03.124843+00:00
+test_session_002,Test Bäckerei München,user,Do you accept credit cards?,2026-04-15T13:52:03.124843+00:00
+test_session_002,Test Bäckerei München,assistant,"Yes, we accept cash, EC card, credit card, Apple Pay, and Google Pay.",2026-04-15T13:54:03.124843+00:00
+test_session_002,Test Bäckerei München,user,Thank you!,2026-04-15T13:56:03.124843+00:00
+test_session_002,Test Bäckerei München,assistant,You're welcome! Visit us anytime.,2026-04-15T13:58:03.124843+00:00
+test_session_003,Test Bäckerei München,user,Kann ich eine Torte bestellen?,2026-04-15T14:18:03.124844+00:00
+test_session_003,Test Bäckerei München,assistant,"Ja, Tortenbestellungen nehmen wir gerne 3 Tage im Voraus entgegen. Rufen Sie uns an oder besuchen Sie uns im Laden.",2026-04-15T14:20:03.124844+00:00

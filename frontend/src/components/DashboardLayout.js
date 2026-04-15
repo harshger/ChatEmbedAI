@@ -2,13 +2,14 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from '../lib/i18n';
-import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu } from 'lucide-react';
+import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu, MessageSquare } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, labelKey: 'Dashboard' },
   { path: '/dashboard/new', icon: Plus, labelKey: 'New Chatbot' },
   { path: '/dashboard/templates', icon: FileText, labelKey: 'Templates' },
   { path: '/dashboard/verify-domain', icon: Globe, labelKey: 'Domain' },
+  { path: '/dashboard/conversations', icon: MessageSquare, labelKey: 'Conversations' },
   { path: '/dashboard/analytics', icon: BarChart3, labelKey: 'Analytics' },
   { path: '/dashboard/billing', icon: CreditCard, labelKey: 'Billing' },
   { path: '/dashboard/ai-settings', icon: Cpu, labelKey: 'AI Engine' },

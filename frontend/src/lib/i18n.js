@@ -157,8 +157,16 @@ const translations = {
       customize: 'Jetzt anpassen',
       or_custom: 'oder erstellen Sie einen eigenen Chatbot',
     },
+    conversations: {
+      title: 'Konversationen',
+      total_label: 'Konversationen gefunden',
+      search_placeholder: 'Konversationen durchsuchen...',
+      export_btn: 'CSV exportieren',
+      empty: 'Noch keine Konversationen',
+      empty_desc: 'Konversationen erscheinen hier, sobald Besucher Ihre Chatbots nutzen.',
+      detail_title: 'Konversation',
+    },
     team: {
-      title: 'Team verwalten',
       invite: 'Mitglied einladen',
       email: 'E-Mail-Adresse',
       role: 'Rolle',
@@ -328,6 +336,15 @@ const translations = {
       use: 'Use Template',
       customize: 'Customize Now',
       or_custom: 'or create a custom chatbot',
+    },
+    conversations: {
+      title: 'Conversations',
+      total_label: 'conversations found',
+      search_placeholder: 'Search conversations...',
+      export_btn: 'Export CSV',
+      empty: 'No conversations yet',
+      empty_desc: 'Conversations will appear here once visitors use your chatbots.',
+      detail_title: 'Conversation',
     },
     team: {
       title: 'Team Management',

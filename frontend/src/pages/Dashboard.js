@@ -168,12 +168,22 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Usage bar */}
-        {usagePercent > 70 && (
-          <div className={`border p-4 ${usagePercent >= 95 ? 'border-red-400 bg-red-50' : 'border-yellow-400 bg-yellow-50'}`} data-testid="usage-warning">
-            <p className="text-sm font-bold">{usagePercent}% of monthly messages used. <Link to="/pricing" className="text-[#002FA7] underline">Upgrade plan</Link></p>
+        {/* Usage bar - always visible */}
+        <div className={`border p-4 ${usagePercent >= 95 ? 'border-red-400 bg-red-50' : usagePercent >= 70 ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`} data-testid="usage-bar">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-bold text-[#0A0A0A]">
+              {t.dashboard?.stats?.messages || 'Messages'}: {stats?.messages_this_month || 0} / {stats?.message_limit || 0}
+            </p>
+            <span className="text-xs font-bold text-[#4B5563]">{usagePercent}%</span>
           </div>
-        )}
+          <Progress value={Math.min(usagePercent, 100)} className={`h-2 rounded-none ${usagePercent >= 95 ? '[&>div]:bg-red-500' : usagePercent >= 70 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-[#002FA7]'}`} />
+          {usagePercent >= 80 && (
+            <p className="text-xs text-[#4B5563] mt-2">
+              {usagePercent >= 95 ? 'Limit almost reached!' : 'Running low on messages.'}{' '}
+              <Link to="/pricing" className="text-[#002FA7] underline font-bold">Upgrade plan</Link>
+            </p>
+          )}
+        </div>
 
         {/* Chatbot cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-gray-200" data-testid="chatbot-grid">

@@ -60,6 +60,11 @@ export const api = {
   getAIConfig: () => fetch(`${API}/ai/config`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
   updateAIConfig: (data) => fetch(`${API}/ai/config`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
 
+  // Conversations
+  getConversations: (params) => fetch(`${API}/conversations?${params}`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  getConversation: (sessionId) => fetch(`${API}/conversations/${sessionId}`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  exportConversations: (params) => fetch(`${API}/conversations/export?${params}`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.text(); }),
+
   // Domain Verification
   getDomainStatus: () => fetch(`${API}/domain/status`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
   initDomainVerification: (data) => fetch(`${API}/domain/init`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),

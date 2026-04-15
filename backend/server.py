@@ -21,6 +21,7 @@ from routes.templates import router as templates_router
 from routes.embed import router as embed_router
 from routes.ai_config import router as ai_config_router
 from routes.invoices import router as invoices_router
+from routes.marketing import router as marketing_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -42,6 +43,7 @@ api_router.include_router(templates_router)
 api_router.include_router(embed_router)
 api_router.include_router(ai_config_router)
 api_router.include_router(invoices_router)
+api_router.include_router(marketing_router)
 
 
 @api_router.get("/health")

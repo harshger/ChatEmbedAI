@@ -13,11 +13,18 @@ PLAN_LIMITS = {
     'free': {'chatbots': 1, 'messages': 500},
     'starter': {'chatbots': 3, 'messages': 2000},
     'pro': {'chatbots': 10, 'messages': 10000},
+    'growth': {'chatbots': 10, 'messages': 10000},
     'agency': {'chatbots': 999, 'messages': 999999},
 }
 
 PLAN_PRICES = {
     'starter': {'monthly': 29.00, 'yearly': 290.00},
     'pro': {'monthly': 79.00, 'yearly': 790.00},
+    'growth': {'monthly': 99.00, 'yearly': 990.00},
     'agency': {'monthly': 199.00, 'yearly': 1990.00},
+}
+
+MARKETING_USAGE_LIMITS = {
+    'growth': 50,
+    'agency': 999,
 }

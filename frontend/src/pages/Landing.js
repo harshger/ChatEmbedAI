@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../lib/i18n';
 import { Link } from 'react-router-dom';
-import { Shield, Globe, Zap, Bot, Code, Server, ArrowRight, CheckCircle, Quote } from 'lucide-react';
+import { Shield, Globe, Zap, Bot, Code, Server, ArrowRight, CheckCircle, Quote, PenTool, Mail, Search, Euro, Rocket, Crosshair } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -13,6 +13,7 @@ const TESTIMONIAL_IMAGES = [
 ];
 
 const FEATURE_ICONS = [Globe, Shield, Zap, Bot, Code, Server];
+const MARKETING_ICONS = { 'pen-tool': PenTool, 'mail': Mail, 'search': Search, 'euro': Euro, 'rocket': Rocket, 'shield': Shield };
 
 export default function Landing() {
   const { t } = useTranslation();
@@ -89,6 +90,39 @@ export default function Landing() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Marketing Assistent Section */}
+      <section className="py-24 bg-white border-t border-gray-200" data-testid="marketing-section">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Crosshair size={18} className="text-[#002FA7]" />
+            <span className="text-xs font-bold bg-green-500 text-white px-2 py-0.5">NEU</span>
+          </div>
+          <h2 className="font-clash text-3xl lg:text-4xl font-bold tracking-tight text-[#0A0A0A] mb-4">{t.marketing.landing_title}</h2>
+          <p className="text-[#4B5563] max-w-2xl mb-12 leading-relaxed">{t.marketing.landing_subtitle}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-gray-200 mb-12">
+            {t.marketing.landing_items.map((item, i) => {
+              const Icon = MARKETING_ICONS[item.icon] || Crosshair;
+              return (
+                <div key={i} className="p-8 bg-white border border-gray-200 hover:bg-[#F9FAFB] transition-colors" data-testid={`marketing-feature-${i}`}>
+                  <Icon size={22} className="text-[#002FA7] mb-4" />
+                  <h3 className="text-lg font-bold text-[#0A0A0A] mb-2">{item.title}</h3>
+                  <p className="text-sm text-[#4B5563] leading-relaxed">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="text-center">
+            <Link to="/signup">
+              <Button className="bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none px-8 py-4 text-base font-bold" data-testid="marketing-cta">
+                {t.marketing.landing_cta}
+                <ArrowRight size={18} className="ml-2" />
+              </Button>
+            </Link>
+            <p className="text-xs text-[#4B5563] mt-3">{t.marketing.landing_small}</p>
           </div>
         </div>
       </section>

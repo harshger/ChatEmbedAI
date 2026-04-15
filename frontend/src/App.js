@@ -29,6 +29,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import AISettings from "./pages/AISettings";
 import DomainVerification from "./pages/DomainVerification";
 import Conversations from "./pages/Conversations";
+import MarketingAssistant from "./pages/MarketingAssistant";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -83,6 +84,7 @@ function AppRouter() {
         <Route path="/dashboard/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
         <Route path="/dashboard/ai-settings" element={<ProtectedRoute><AISettings /></ProtectedRoute>} />
         <Route path="/dashboard/conversations" element={<ProtectedRoute><Conversations /></ProtectedRoute>} />
+        <Route path="/dashboard/marketing" element={<ProtectedRoute><MarketingAssistant /></ProtectedRoute>} />
         <Route path="/dashboard/verify-domain" element={<ProtectedRoute><DomainVerification /></ProtectedRoute>} />
         <Route path="/account/privacy" element={<ProtectedRoute><PrivacyCenter /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

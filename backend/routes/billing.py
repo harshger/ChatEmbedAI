@@ -150,7 +150,8 @@ async def get_plans():
             {'id': 'free', 'name': 'Free', 'monthly': 0, 'yearly': 0, 'chatbots': 1, 'messages': 500, 'features': ['ChatEmbed Branding', 'DSGVO Widget']},
             {'id': 'starter', 'name': 'Starter', 'monthly': 29, 'yearly': 290, 'chatbots': 3, 'messages': 2000, 'features': ['Remove Branding', 'Email Support']},
             {'id': 'pro', 'name': 'Pro', 'monthly': 79, 'yearly': 790, 'chatbots': 10, 'messages': 10000, 'features': ['White-label', 'Analytics', 'AVV', 'Priority Support']},
-            {'id': 'agency', 'name': 'Agentur', 'monthly': 199, 'yearly': 1990, 'chatbots': 999, 'messages': 999999, 'features': ['White-label', 'Sub-Accounts', 'Onboarding', 'SLA']},
+            {'id': 'growth', 'name': 'Growth', 'monthly': 99, 'yearly': 990, 'chatbots': 10, 'messages': 10000, 'features': ['Alles aus Pro', 'Marketing Assistent', '10 KI-Marketing-Skills', '50 Analysen/Monat', '7 Tage kostenlos']},
+            {'id': 'agency', 'name': 'Agentur', 'monthly': 199, 'yearly': 1990, 'chatbots': 999, 'messages': 999999, 'features': ['White-label', 'Sub-Accounts', 'Marketing Assistent', 'Onboarding', 'SLA']},
         ]
     }
 
@@ -159,7 +160,7 @@ async def get_plans():
 async def change_plan(request: Request, user=Depends(get_current_user)):
     body = await request.json()
     new_plan = body.get('plan')
-    if new_plan not in ('free', 'starter', 'pro', 'agency'):
+    if new_plan not in ('free', 'starter', 'pro', 'growth', 'agency'):
         raise HTTPException(status_code=400, detail="Invalid plan")
     if new_plan == 'free':
         await db.users.update_one({'user_id': user['user_id']}, {'$set': {'plan': 'free', 'updated_at': datetime.now(timezone.utc).isoformat()}})

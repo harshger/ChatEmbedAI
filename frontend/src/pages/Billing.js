@@ -8,8 +8,8 @@ import { Badge } from '../components/ui/badge';
 import { CreditCard, FileText, ArrowUpRight, Check, Download } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
-const PLAN_ORDER = ['free', 'starter', 'pro', 'agency'];
-const PLAN_PRICES = { free: 0, starter: 29, pro: 79, agency: 199 };
+const PLAN_ORDER = ['free', 'starter', 'pro', 'growth', 'agency'];
+const PLAN_PRICES = { free: 0, starter: 29, pro: 79, growth: 99, agency: 199 };
 
 export default function Billing() {
   const { t } = useTranslation();

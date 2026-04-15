@@ -11,11 +11,12 @@ import Footer from '../components/Footer';
 const PLANS = [
   { id: 'free', chatbots: '1', messages: '500', features: ['ChatEmbed Branding', 'DSGVO-Hinweis Widget'] },
   { id: 'starter', chatbots: '3', messages: '2.000', features: ['Remove Branding', 'Email Support'], monthly: 29, yearly: 290 },
-  { id: 'pro', chatbots: '10', messages: '10.000', features: ['White-label', 'Analytics Dashboard', 'AVV Download', 'Priority Support'], monthly: 79, yearly: 790, highlighted: true },
-  { id: 'agency', chatbots: 'Unlimited', messages: 'Unlimited', features: ['White-label', 'Sub-Accounts', 'Dedicated Onboarding', 'SLA Guarantee'], monthly: 199, yearly: 1990 },
+  { id: 'pro', chatbots: '10', messages: '10.000', features: ['White-label', 'Analytics Dashboard', 'AVV Download', 'Priority Support'], monthly: 79, yearly: 790 },
+  { id: 'growth', chatbots: '10', messages: '10.000', features: ['Alles aus Pro', 'Marketing Assistent', '10 KI-Marketing-Skills', '50 Analysen/Monat', '7 Tage kostenlos'], monthly: 99, yearly: 990, highlighted: true },
+  { id: 'agency', chatbots: 'Unlimited', messages: 'Unlimited', features: ['White-label', 'Sub-Accounts', 'Marketing Assistent', 'Dedicated Onboarding', 'SLA Guarantee'], monthly: 199, yearly: 1990 },
 ];
 
-const PLAN_NAMES = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agentur' };
+const PLAN_NAMES = { free: 'Free', starter: 'Starter', pro: 'Pro', growth: 'Growth', agency: 'Agentur' };
 
 export default function Pricing() {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-0 border border-gray-200">
           {PLANS.map((plan) => (
             <div key={plan.id} className={`p-8 border border-gray-200 flex flex-col ${plan.highlighted ? 'bg-white border-2 border-[#002FA7] relative' : 'bg-white'}`} data-testid={`plan-${plan.id}`}>
               {plan.highlighted && <div className="absolute top-0 left-0 right-0 h-1 bg-[#002FA7]" />}

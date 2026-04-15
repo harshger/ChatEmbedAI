@@ -2,13 +2,15 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from '../lib/i18n';
-import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu, MessageSquare, Crosshair } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
 
 export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth();
   const { t, lang, setLang } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const plan = user?.plan || 'free';
 
   const NAV_ITEMS = [
     { path: '/dashboard', icon: LayoutDashboard, label: t.sidebar.dashboard },
@@ -16,6 +18,7 @@ export default function DashboardLayout({ children }) {
     { path: '/dashboard/templates', icon: FileText, label: t.sidebar.templates },
     { path: '/dashboard/verify-domain', icon: Globe, label: t.sidebar.domain },
     { path: '/dashboard/conversations', icon: MessageSquare, label: t.sidebar.conversations },
+    { path: '/dashboard/marketing', icon: Crosshair, label: t.sidebar.marketing, badge: 'NEU' },
     { path: '/dashboard/analytics', icon: BarChart3, label: t.sidebar.analytics },
     { path: '/dashboard/billing', icon: CreditCard, label: t.sidebar.billing },
     { path: '/dashboard/ai-settings', icon: Cpu, label: t.sidebar.ai_engine },
@@ -41,7 +44,8 @@ export default function DashboardLayout({ children }) {
           {NAV_ITEMS.map(item => (
             <Link key={item.path} to={item.path} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${location.pathname === item.path ? 'bg-[#002FA7] text-white' : 'text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#0A0A0A]'}`} data-testid={`nav-${item.path.split('/').pop()}`}>
               <item.icon size={18} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.badge && <span className="text-[10px] font-bold bg-green-500 text-white px-1.5 py-0.5 leading-none">{item.badge}</span>}
             </Link>
           ))}
         </nav>

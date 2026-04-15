@@ -79,6 +79,14 @@ export const api = {
 
   // Analytics CSV Export
   exportAnalyticsCsv: () => fetch(`${API}/analytics/export/csv`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.text(); }),
+
+  // Marketing Assistent
+  getMarketingSkills: () => fetch(`${API}/marketing/skills`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  getMarketingUsage: () => fetch(`${API}/marketing/usage`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  startMarketingTrial: () => fetch(`${API}/marketing/start-trial`, { method: 'POST', headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  runMarketingSkill: (data) => fetch(`${API}/marketing/run`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  saveMarketingResult: (data) => fetch(`${API}/marketing/save`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  getMarketingHistory: () => fetch(`${API}/marketing/history`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
 };
 
 export default api;

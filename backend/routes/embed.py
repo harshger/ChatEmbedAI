@@ -11,8 +11,8 @@ EMBED_JS_TEMPLATE = """
   var apiBase = script.src.replace('/api/embed.js', '');
 
   var translations = {
-    de: { gdpr: 'Dieser Chat wird von ChatEmbed AI bereitgestellt. Nachrichten werden zur Verarbeitung an KI-Server übertragen.', consent: 'Verstanden & fortfahren', privacy: 'Datenschutz', placeholder: 'Nachricht eingeben...', powered: 'Powered by ChatEmbed AI', badge: 'KI-Chat' },
-    en: { gdpr: 'This chat is provided by ChatEmbed AI. Messages are transmitted to AI servers for processing.', consent: 'Understood & Continue', privacy: 'Privacy Policy', placeholder: 'Type a message...', powered: 'Powered by ChatEmbed AI', badge: 'AI Chat' }
+    de: { gdpr: 'Dieser Chat wird von ChatEmbed AI bereitgestellt. Nachrichten werden zur Verarbeitung an KI-Server übertragen.', consent: 'Verstanden & fortfahren', privacy: 'Datenschutz', placeholder: 'Nachricht eingeben...', powered: 'Powered by ChatEmbed AI', badge: 'KI-Chat', blocked: 'Dieses Chat-Widget ist für diese Domain nicht autorisiert.' },
+    en: { gdpr: 'This chat is provided by ChatEmbed AI. Messages are transmitted to AI servers for processing.', consent: 'Understood & Continue', privacy: 'Privacy Policy', placeholder: 'Type a message...', powered: 'Powered by ChatEmbed AI', badge: 'AI Chat', blocked: 'This chat widget is not authorized for this domain.' }
   };
   var t = translations[lang] || translations.de;
 
@@ -56,8 +56,20 @@ EMBED_JS_TEMPLATE = """
   var businessName = '';
   var showGdpr = true;
 
-  // Fetch chatbot config
+  // Fetch chatbot config with domain lock check
   fetch(apiBase+'/api/chatbot-public/'+chatbotId).then(function(r){return r.json()}).then(function(d){
+    // Domain lock: block widget if domain is verified and current host doesn't match
+    var allowedDomain = d.allowed_domain || '';
+    var domainVerified = d.domain_verified || false;
+    var currentHost = window.location.hostname.replace(/^www\\./, '');
+    var normalizedAllowed = allowedDomain.replace(/^www\\./, '');
+
+    if (domainVerified && normalizedAllowed && currentHost !== normalizedAllowed) {
+      btn.style.display = 'none';
+      console.warn('[ChatEmbed] Widget blocked: domain mismatch. Allowed: ' + normalizedAllowed + ', Current: ' + currentHost);
+      return;
+    }
+
     color = d.widget_color || '#6366f1';
     businessName = d.business_name || '';
     showGdpr = d.show_gdpr_notice !== false;

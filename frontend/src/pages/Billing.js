@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { CreditCard, FileText, ArrowUpRight, Check } from 'lucide-react';
+import { CreditCard, FileText, ArrowUpRight, Check, Download } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 const PLAN_NAMES = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agentur' };
@@ -24,6 +24,7 @@ export default function Billing() {
   const [billing, setBilling] = useState(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState('');
+  const [downloadingPdf, setDownloadingPdf] = useState('');
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -74,6 +75,22 @@ export default function Billing() {
 
   const currentPlan = billing?.plan || user?.plan || 'free';
   const currentIndex = PLAN_ORDER.indexOf(currentPlan);
+
+  const handleDownloadInvoice = async (transactionId) => {
+    setDownloadingPdf(transactionId);
+    try {
+      const blob = await api.downloadInvoicePdf(transactionId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Rechnung-${transactionId.slice(0, 8).toUpperCase()}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PDF download error:', err);
+    }
+    setDownloadingPdf('');
+  };
 
   return (
     <DashboardLayout>
@@ -153,9 +170,24 @@ export default function Billing() {
                       <p className="text-xs text-[#4B5563]">{tx.created_at?.slice(0, 10)}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-sm">{tx.amount > 0 ? `€${tx.amount}` : 'Free'}</p>
-                    <Badge variant={tx.payment_status === 'paid' ? 'default' : 'secondary'} className="text-xs rounded-none">{tx.payment_status}</Badge>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-bold text-sm">{tx.amount > 0 ? `€${tx.amount}` : 'Free'}</p>
+                      <Badge variant={tx.payment_status === 'paid' ? 'default' : 'secondary'} className="text-xs rounded-none">{tx.payment_status}</Badge>
+                    </div>
+                    {tx.payment_status === 'paid' && tx.transaction_id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadInvoice(tx.transaction_id)}
+                        disabled={downloadingPdf === tx.transaction_id}
+                        className="rounded-none border-gray-300 text-xs font-bold gap-1"
+                        data-testid={`download-invoice-${i}`}
+                      >
+                        <Download size={12} />
+                        {downloadingPdf === tx.transaction_id ? '...' : 'PDF'}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

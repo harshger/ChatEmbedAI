@@ -170,8 +170,13 @@ async def get_conversation(session_id: str, user=Depends(get_current_user)):
 
 @router.post("/maintenance/cleanup-expired")
 async def cleanup_expired_messages(user=Depends(get_current_user)):
-    """Delete messages older than 90 days (GDPR data retention)."""
+    """Manually trigger GDPR data retention: delete messages older than 90 days."""
     cutoff = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
-    result = await db.messages.delete_many({'expires_at': {'$lte': cutoff}})
-    logger.info(f"Cleaned up {result.deleted_count} expired messages")
-    return {"ok": True, "deleted_count": result.deleted_count}
+    result_expires = await db.messages.delete_many({'expires_at': {'$lte': cutoff}})
+    result_created = await db.messages.delete_many({
+        'expires_at': {'$exists': False},
+        'created_at': {'$lte': cutoff}
+    })
+    total = result_expires.deleted_count + result_created.deleted_count
+    logger.info(f"Manual cleanup: {total} expired messages deleted")
+    return {"ok": True, "deleted_count": total}

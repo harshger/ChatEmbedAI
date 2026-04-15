@@ -31,15 +31,26 @@ async def log_consent(data: ConsentLog, request: Request):
 async def export_user_data(user=Depends(get_current_user)):
     user_data = {k: v for k, v in user.items() if k != 'password_hash'}
     chatbots = await db.chatbots.find({'user_id': user['user_id']}, {'_id': 0}).to_list(100)
-    messages = await db.messages.find({'chatbot_id': {'$in': [c['chatbot_id'] for c in chatbots]}}, {'_id': 0}).to_list(10000)
-    invoices = await db.invoices.find({'user_id': user['user_id']}, {'_id': 0}).to_list(100)
+    chatbot_ids = [c['chatbot_id'] for c in chatbots]
+    messages = await db.messages.find({'chatbot_id': {'$in': chatbot_ids}}, {'_id': 0}).to_list(10000)
+    transactions = await db.payment_transactions.find({'user_id': user['user_id']}, {'_id': 0}).to_list(100)
+    team_members = await db.team_members.find({'owner_id': user['user_id']}, {'_id': 0}).to_list(50)
+    consent_logs = await db.consent_log.find({'user_id': user['user_id']}, {'_id': 0}).to_list(500)
+    subscription = await db.subscriptions.find_one({'user_id': user['user_id']}, {'_id': 0})
 
     export_data = {
+        'export_info': {
+            'exported_at': datetime.now(timezone.utc).isoformat(),
+            'format_version': '1.0',
+            'gdpr_article': 'Art. 20 DSGVO - Recht auf Datenübertragbarkeit',
+        },
         'account': user_data,
+        'subscription': subscription,
         'chatbots': chatbots,
         'messages': messages,
-        'invoices': invoices,
-        'exported_at': datetime.now(timezone.utc).isoformat(),
+        'payment_transactions': transactions,
+        'team_members': team_members,
+        'consent_logs': consent_logs,
     }
 
     await db.consent_log.insert_one({

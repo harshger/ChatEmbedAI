@@ -73,6 +73,9 @@ export const api = {
   // Billing Management
   getPlans: () => fetch(`${API}/billing/plans`).then(r => { if (!r.ok) throw r; return r.json(); }),
   changePlan: (data) => fetch(`${API}/billing/change-plan`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
+  // Invoice PDF
+  downloadInvoicePdf: (transactionId) => fetch(`${API}/billing/invoice/${transactionId}/pdf`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.blob(); }),
 };
 
 export default api;

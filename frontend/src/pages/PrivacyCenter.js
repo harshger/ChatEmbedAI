@@ -5,7 +5,7 @@ import { api } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
-import { Download, Trash2, Settings } from 'lucide-react';
+import { Download, Trash2, Settings, CheckCircle } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 export default function PrivacyCenter() {
@@ -14,17 +14,22 @@ export default function PrivacyCenter() {
   const [showDelete, setShowDelete] = useState(false);
   const [confirmation, setConfirmation] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [exported, setExported] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   const handleExport = async () => {
     setExporting(true);
+    setExported(false);
     try {
       const data = await api.exportData();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'chatembed-data-export.json'; a.click();
+      a.href = url;
+      a.download = `chatembed-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
       URL.revokeObjectURL(url);
+      setExported(true);
     } catch {}
     setExporting(false);
   };
@@ -56,8 +61,9 @@ export default function PrivacyCenter() {
             <h3 className="font-bold text-[#0A0A0A] mb-2">{t.privacy_center.export_btn}</h3>
             <p className="text-sm text-[#4B5563] mb-6">Export all your data as JSON.</p>
             <Button onClick={handleExport} disabled={exporting} variant="outline" className="rounded-none border-gray-300 font-bold" data-testid="export-data-btn">
-              {exporting ? '...' : t.privacy_center.export_btn}
+              {exporting ? '...' : exported ? <><CheckCircle size={14} className="mr-1 text-green-600" />Exported</> : t.privacy_center.export_btn}
             </Button>
+            {exported && <p className="text-xs text-green-700 mt-2" data-testid="export-success-msg">Art. 20 DSGVO — Data exported successfully.</p>}
           </div>
           <div className="p-8 bg-white border border-gray-200">
             <Trash2 size={24} className="text-[#E60000] mb-4" />

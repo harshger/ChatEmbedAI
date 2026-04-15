@@ -1,0 +1,86 @@
+{
+  "summary": "All GDPR features (P0-P2) tested and verified. Backend: 16/16 tests passed (100%). Frontend: All UI tests passed. P0 Data Export, P1 Invoice PDF, P2 Data Retention, P2 Embed.js Domain Lock all working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "P0: GET /api/user/export returns comprehensive JSON with all required fields",
+    "P0: export_info contains exported_at, format_version, gdpr_article (DSGVO reference)",
+    "P0: password_hash is excluded from export data",
+    "P0: Consent log is created on data export (consent_type: data_export)",
+    "P0: Export requires authentication (401)",
+    "P1: GET /api/billing/invoice/{transaction_id}/pdf returns valid PDF for paid transactions",
+    "P1: PDF has correct %PDF- header and application/pdf content-type",
+    "P1: PDF filename contains 'Rechnung' (German invoice)",
+    "P1: Returns 400 for non-paid (initiated) transactions",
+    "P1: Returns 404 for invalid transaction_id",
+    "P1: PDF download requires authentication (401)",
+    "P2: POST /api/maintenance/cleanup-expired works and returns deleted_count",
+    "P2: Cleanup requires authentication (401)",
+    "P2: Background data retention job registered at startup (confirmed in logs)",
+    "P2: GET /api/embed.js returns JavaScript with domain lock logic",
+    "P2: embed.js contains allowed_domain, domain_verified, window.location.hostname checks",
+    "P2: chatbot-public endpoint returns domain_verified and allowed_domain fields",
+    "Frontend: Privacy Center page loads with export button",
+    "Frontend: Export triggers download and shows 'Art. 20 DSGVO — Data exported successfully.'",
+    "Frontend: Billing page shows transaction list with Rechnungen section",
+    "Frontend: PDF download button appears ONLY for paid transactions",
+    "Frontend: PDF download works (Rechnung-B9F075C8.pdf downloaded)"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_gdpr_features.py",
+    "/app/test_reports/pytest/pytest_results_gdpr.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_gdpr_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "email": "test@chatembed.de",
+    "password": "TestPass123!",
+    "user_id": "user_c0f5a21c90c1"
+  },
+  "seed_data_creation": "No new seed data created - used existing paid transaction (pro plan, €79) and initiated transaction (starter plan, €29)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All 4 GDPR features verified: P0 Data Export (Art. 20 DSGVO), P1 Invoice PDF (German tax-compliant with Rechnungsnummer, MwSt, § 14 UStG), P2 Data Retention (background job runs every 24h, manual cleanup via /api/maintenance/cleanup-expired), P2 Embed.js Domain Lock (checks window.location.hostname against allowed_domain). Email sending remains MOCKED. Stripe uses test key.",
+  "mocked_apis": {
+    "email_sending": "MOCKED - logged to console",
+    "stripe_payments": "MOCKED - uses test key sk_test_emergent"
+  },
+  "features_verified": {
+    "P0_data_export": {
+      "endpoint": "GET /api/user/export",
+      "fields": ["export_info", "account", "subscription", "chatbots", "messages", "payment_transactions", "team_members", "consent_logs"],
+      "gdpr_compliance": "Art. 20 DSGVO - Recht auf Datenübertragbarkeit",
+      "security": "password_hash excluded"
+    },
+    "P1_invoice_pdf": {
+      "endpoint": "GET /api/billing/invoice/{transaction_id}/pdf",
+      "format": "German tax-compliant PDF with Rechnungsnummer, Netto/Brutto, 19% MwSt",
+      "legal_references": "§ 14 UStG, § 257 HGB",
+      "restrictions": "Only available for paid transactions"
+    },
+    "P2_data_retention": {
+      "manual_endpoint": "POST /api/maintenance/cleanup-expired",
+      "background_job": "Runs every 24h, deletes messages older than 90 days",
+      "handles": "Both expires_at and created_at based messages"
+    },
+    "P2_embed_domain_lock": {
+      "endpoint": "GET /api/embed.js",
+      "logic": "Checks window.location.hostname against allowed_domain from chatbot-public API",
+      "fields_in_public_api": ["domain_verified", "allowed_domain"]
+    }
+  }
+}

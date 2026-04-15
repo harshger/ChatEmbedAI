@@ -57,40 +57,73 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [x] Public chatbot endpoint returns domain_verified and allowed_domain
 
 ### Phase 6 — Conversation History & GDPR Hardening (Apr 15, 2026)
-- [x] Conversation History page (/dashboard/conversations) with:
-  - Search by keyword, filter by chatbot/date range
-  - Paginated list of conversations grouped by session_id
-  - Click-to-view full conversation thread in dialog
-  - CSV export with GDPR consent logging
-- [x] Always-visible usage bar on dashboard (messages used/limit with color coding)
-- [x] Message auto-delete cleanup endpoint (POST /api/maintenance/cleanup-expired) for GDPR 90-day retention
-- [x] IP anonymization (SHA-256 hash at message collection - already in place since Phase 1)
-- [x] Account deletion with 30-day grace period (already in place since Phase 1)
-- [x] Sidebar navigation updated with Conversations link
+- [x] Conversation History page (/dashboard/conversations) with search, filters, pagination
+- [x] CSV export with GDPR consent logging
+- [x] Always-visible usage bar on dashboard
+- [x] Message auto-delete cleanup endpoint
+- [x] IP anonymization, Account deletion with 30-day grace period
 
 ### Phase 7 — Backend Refactoring (Apr 15, 2026)
-- [x] Refactored server.py from 1852-line monolith → 62-line thin entrypoint
+- [x] Refactored server.py from 1852-line monolith → thin entrypoint
 - [x] Created shared modules: database.py, config.py, models.py, auth_utils.py, templates_data.py
-- [x] Created 12 modular route files under routes/:
-  - auth.py, chatbots.py, chat.py, domain.py, analytics.py, billing.py
-  - conversations.py, team.py, privacy.py, templates.py, embed.py, ai_config.py
-- [x] Full regression test: 45/45 backend tests + all frontend tests passed (100%)
+- [x] Created 12+ modular route files under routes/
+
+### Phase 8 — GDPR Features & Invoice System (Apr 15, 2026)
+- [x] **P0: Data Export (User Rights Center)** — Enhanced GET /api/user/export with comprehensive JSON:
+  - export_info (with Art. 20 DSGVO reference), account (password_hash excluded), subscription, chatbots, messages, payment_transactions, team_members, consent_logs
+  - Consent logging on every export
+- [x] **P1: Invoice PDF Generation** — GET /api/billing/invoice/{transaction_id}/pdf:
+  - German tax-compliant PDF with Rechnungsnummer, Netto/Brutto, 19% MwSt
+  - Legal references: § 14 UStG, § 257 HGB
+  - Company details, bank info, VAT ID
+  - Frontend PDF download button per paid transaction in Billing page
+- [x] **P2: Data Retention Background Job** — Automatic GDPR cleanup:
+  - Background asyncio task runs every 24h
+  - Deletes messages older than 90 days (expires_at + created_at fallback)
+  - Processes pending account deletion requests (30-day grace period)
+  - Manual trigger via POST /api/maintenance/cleanup-expired
+- [x] **P2: Embed.js Domain Lock** — Widget security:
+  - embed.js checks window.location.hostname against allowed_domain
+  - Blocks widget rendering on unauthorized domains (domain_verified required)
+  - Console warning logged when blocked
+
+## Code Architecture
+```
+/app/
+├── backend/
+│   ├── server.py (Thin entrypoint + GDPR retention background task)
+│   ├── database.py, config.py, models.py, auth_utils.py, templates_data.py
+│   ├── routes/
+│   │   ├── auth.py, chatbots.py, chat.py, domain.py, analytics.py, billing.py
+│   │   ├── conversations.py, team.py, privacy.py, templates.py, embed.py
+│   │   ├── ai_config.py, invoices.py
+│   └── tests/
+├── frontend/
+│   ├── src/
+│   │   ├── App.js, App.css, index.css
+│   │   ├── components/ (DashboardLayout, ChatWidgetPreview, CookieConsent, etc.)
+│   │   ├── lib/ (api.js, auth.js, i18n.js)
+│   │   └── pages/ (20+ pages)
+└── memory/
+    ├── PRD.md
+    └── test_credentials.md
+```
 
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- [x] ~~Backend Refactoring~~ — COMPLETED: server.py split into 12 modular routes + 5 shared modules
+- [x] All P0 items completed
 
 ### P1 (High)
-- [ ] User Rights Center — "Download my data" JSON export from /account/privacy page
-- [ ] Invoice PDF generation (German tax §257 HGB)
-- [ ] Data retention cron job (auto-delete messages after 90 days on schedule)
+- [x] User Rights Center — data export ✓
+- [x] Invoice PDF generation ✓
+- [x] Data retention cron job ✓
 - [ ] Wire Ollama into chat endpoint based on ai_config
 - [ ] Unanswered question logging and tracking
 
 ### P2 (Medium)
+- [x] Embed.js domain lock ✓
 - [ ] CSV export for analytics page
-- [ ] Embed.js domain lock — widget only loads on verified domain
 - [ ] Docker Compose deployment setup
 - [ ] Domain whitelist per chatbot (CORS)
 - [ ] Custom widget logo upload
@@ -103,10 +136,14 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [ ] Sub-account management (Agency)
 - [ ] Custom chat domain (Agency)
 - [ ] Status page
+- [ ] OpenAPI/Swagger documentation
+
+## Mocked Services
+- Email sending (logged to console, tokens returned in API for demo)
+- Stripe (test key, no real charges)
 
 ## Next Tasks
-1. User Rights Center (download my data JSON from /account/privacy)
-2. Invoice PDF generation (German tax compliant)
-3. Unanswered question logging
-4. Embed.js domain lock (widget only on verified domain)
-5. Data retention cron job
+1. Ollama integration in chat endpoint
+2. Unanswered question logging
+3. CSV export for analytics
+4. Docker Compose setup

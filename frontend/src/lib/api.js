@@ -40,6 +40,15 @@ export const api = {
   // User data
   exportData: () => fetch(`${API}/user/export`, { headers: { ...getAuthHeaders() }, credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
   deleteAccount: (confirmation) => fetch(`${API}/user/account`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify({ confirmation }), credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
+  // Templates
+  getTemplates: () => fetch(`${API}/templates`).then(r => { if (!r.ok) throw r; return r.json(); }),
+  createFromTemplate: (data) => fetch(`${API}/chatbots/from-template`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data), credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
+  // Team
+  getTeam: () => fetch(`${API}/team`, { headers: { ...getAuthHeaders() }, credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  inviteTeamMember: (data) => fetch(`${API}/team/invite`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data), credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  removeTeamMember: (id) => fetch(`${API}/team/${id}`, { method: 'DELETE', headers: { ...getAuthHeaders() }, credentials: 'include' }).then(r => { if (!r.ok) throw r; return r.json(); }),
 };
 
 export default api;

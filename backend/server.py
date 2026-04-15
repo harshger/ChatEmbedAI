@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends
+from fastapi.responses import PlainTextResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -82,6 +83,208 @@ class CheckoutRequest(BaseModel):
 
 class DeleteAccountRequest(BaseModel):
     confirmation: str
+
+class TeamInvite(BaseModel):
+    email: str
+    role: str = 'member'
+
+# ---------- CHATBOT TEMPLATES ----------
+CHATBOT_TEMPLATES = [
+    {
+        "id": "baeckerei",
+        "name": "Bäckerei / Bakery",
+        "icon": "croissant",
+        "category": "Gastronomie",
+        "business_name": "Meine Bäckerei",
+        "primary_language": "de",
+        "faq_content": """Öffnungszeiten:
+Montag bis Freitag: 6:00 - 18:00 Uhr
+Samstag: 6:00 - 14:00 Uhr
+Sonntag: 7:00 - 12:00 Uhr
+
+Unser Sortiment:
+- Frische Brötchen (Weizen, Roggen, Mehrkorn, Dinkel)
+- Brot (Sauerteig, Vollkorn, Bauernbrot, Ciabatta)
+- Kuchen und Torten (täglich frisch)
+- Snacks (belegte Brötchen, Brezeln, Croissants)
+- Kaffee und Heißgetränke
+
+Bestellungen:
+Tortenbestellungen nehmen wir gerne 3 Tage im Voraus entgegen. Rufen Sie uns an oder besuchen Sie uns im Laden.
+
+Allergene:
+Alle Allergeninformationen sind im Laden ausgehängt. Fragen Sie gerne unser Personal.
+
+Lieferung:
+Wir liefern ab einem Bestellwert von 30€ im Umkreis von 5 km. Liefergebühr: 3,50€.
+
+Zahlungsmethoden:
+Bar, EC-Karte, Kreditkarte, Apple Pay, Google Pay"""
+    },
+    {
+        "id": "zahnarzt",
+        "name": "Zahnarztpraxis / Dental Practice",
+        "icon": "stethoscope",
+        "category": "Gesundheit",
+        "business_name": "Zahnarztpraxis Dr. Müller",
+        "primary_language": "de",
+        "faq_content": """Sprechzeiten:
+Montag: 8:00 - 12:00 und 14:00 - 18:00 Uhr
+Dienstag: 8:00 - 12:00 und 14:00 - 18:00 Uhr
+Mittwoch: 8:00 - 13:00 Uhr
+Donnerstag: 8:00 - 12:00 und 14:00 - 19:00 Uhr
+Freitag: 8:00 - 13:00 Uhr
+
+Terminvereinbarung:
+Termine können telefonisch oder über unsere Online-Terminbuchung vereinbart werden.
+
+Notfälle:
+Bei Zahnschmerzen außerhalb der Sprechzeiten wenden Sie sich bitte an den zahnärztlichen Notdienst: 01805-986700.
+
+Unsere Leistungen:
+- Prophylaxe und professionelle Zahnreinigung
+- Füllungen und Wurzelbehandlungen
+- Zahnersatz (Kronen, Brücken, Implantate)
+- Kieferorthopädie
+- Kinderzahnheilkunde
+- Ästhetische Zahnmedizin (Bleaching, Veneers)
+
+Versicherung:
+Wir akzeptieren alle gesetzlichen und privaten Krankenversicherungen.
+
+Erste Besuch:
+Bitte bringen Sie Ihre Versichertenkarte und ggf. Röntgenbilder vom Vorzahnarzt mit.
+
+Parkplätze:
+Kostenlose Parkplätze direkt vor der Praxis."""
+    },
+    {
+        "id": "restaurant",
+        "name": "Restaurant",
+        "icon": "utensils",
+        "category": "Gastronomie",
+        "business_name": "Mein Restaurant",
+        "primary_language": "de",
+        "faq_content": """Öffnungszeiten:
+Dienstag bis Samstag: 11:30 - 14:30 und 17:30 - 22:00 Uhr
+Sonntag: 11:30 - 15:00 Uhr (nur Mittagstisch)
+Montag: Ruhetag
+
+Reservierungen:
+Reservierungen nehmen wir telefonisch oder über unser Online-Formular entgegen. Für Gruppen ab 8 Personen bitten wir um Reservierung mindestens 2 Tage im Voraus.
+
+Speisekarte:
+Unsere Speisekarte wechselt saisonal. Aktuelle Gerichte finden Sie auf unserer Website.
+
+Allergien & Unverträglichkeiten:
+Bitte informieren Sie uns bei der Reservierung über Allergien. Vegetarische und vegane Optionen sind immer verfügbar. Glutenfreie Gerichte auf Anfrage.
+
+Mittagstisch:
+Dienstag bis Freitag bieten wir einen wechselnden Mittagstisch ab 9,90€ inkl. Getränk an.
+
+Veranstaltungen:
+Unser separater Raum für bis zu 30 Personen steht für Firmenfeiern, Geburtstage und andere Anlässe zur Verfügung.
+
+Zahlungsmethoden:
+Bar, EC-Karte, Visa, Mastercard. Keine American Express."""
+    },
+    {
+        "id": "friseur",
+        "name": "Friseursalon / Hair Salon",
+        "icon": "scissors",
+        "category": "Dienstleistung",
+        "business_name": "Salon Schön",
+        "primary_language": "de",
+        "faq_content": """Öffnungszeiten:
+Dienstag bis Freitag: 9:00 - 18:00 Uhr
+Samstag: 9:00 - 14:00 Uhr
+Montag & Sonntag: geschlossen
+
+Terminvereinbarung:
+Termine können telefonisch oder online gebucht werden. Wir empfehlen eine Buchung mindestens 2-3 Tage im Voraus.
+
+Unsere Leistungen:
+- Damenhaarschnitt ab 35€
+- Herrenhaarschnitt ab 25€
+- Kinderhaarschnitt (bis 12 Jahre) ab 18€
+- Färben/Strähnen ab 55€
+- Dauerwelle ab 65€
+- Hochsteckfrisuren ab 45€
+- Bartpflege ab 15€
+
+Produkte:
+Wir verwenden und verkaufen hochwertige Produkte von Kerastase und Redken.
+
+Stornierung:
+Bitte sagen Sie Termine mindestens 24 Stunden vorher ab. Bei Nichterscheinen berechnen wir 50% des Servicepreises.
+
+Parken:
+Kostenfreie Parkplätze im Hof."""
+    },
+    {
+        "id": "immobilien",
+        "name": "Immobilienmakler / Real Estate",
+        "icon": "building",
+        "category": "Immobilien",
+        "business_name": "Immobilien Schmidt",
+        "primary_language": "de",
+        "faq_content": """Über uns:
+Wir sind Ihr regionaler Immobilienmakler mit über 15 Jahren Erfahrung in der Vermittlung von Wohn- und Gewerbeimmobilien.
+
+Unsere Leistungen:
+- Verkauf von Wohnungen und Häusern
+- Vermietung von Wohn- und Gewerbeimmobilien
+- Immobilienbewertung (kostenlos und unverbindlich)
+- Beratung bei Kapitalanlage
+- Verwaltung von Mietobjekten
+
+Maklerprovision:
+Die Provision beträgt 3,57% inkl. MwSt. vom Kaufpreis. Bei Vermietung: 2 Nettokaltmieten zzgl. MwSt.
+
+Immobilienbewertung:
+Wir erstellen Ihnen kostenlos eine Marktwerteinschätzung Ihrer Immobilie. Vereinbaren Sie einen Termin.
+
+Besichtigungen:
+Besichtigungstermine können individuell vereinbart werden. Bitte bringen Sie einen gültigen Ausweis mit.
+
+Kontakt:
+Telefon: +49 (0) XXX XXXXXXX
+E-Mail: info@immobilien-schmidt.de
+Bürozeiten: Mo-Fr 9:00-18:00 Uhr"""
+    },
+    {
+        "id": "anwalt",
+        "name": "Rechtsanwalt / Law Firm",
+        "icon": "scale",
+        "category": "Recht",
+        "business_name": "Kanzlei Weber & Partner",
+        "primary_language": "de",
+        "faq_content": """Unsere Rechtsgebiete:
+- Arbeitsrecht
+- Mietrecht
+- Familienrecht
+- Verkehrsrecht
+- Vertragsrecht
+- Erbrecht
+
+Erstberatung:
+Die Erstberatung kostet 190€ netto (226,10€ inkl. MwSt.) und dauert ca. 45 Minuten. Bringen Sie bitte alle relevanten Unterlagen mit.
+
+Terminvereinbarung:
+Termine können telefonisch oder per E-Mail vereinbart werden. In dringenden Fällen sind kurzfristige Termine möglich.
+
+Kosten:
+Die Kosten richten sich nach dem Rechtsanwaltsvergütungsgesetz (RVG). Bei Rechtsschutzversicherung übernehmen wir die Deckungsanfrage.
+
+Sprechzeiten:
+Montag bis Donnerstag: 9:00 - 17:00 Uhr
+Freitag: 9:00 - 14:00 Uhr
+Termine nach Vereinbarung auch außerhalb der Sprechzeiten.
+
+Anfahrt:
+Kostenlose Parkplätze vorhanden. Barrierefreier Zugang."""
+    },
+]
 
 # ---------- AUTH HELPERS ----------
 def hash_password(password: str) -> str:
@@ -615,6 +818,29 @@ async def stripe_webhook(request: Request):
         stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
         webhook_response = await stripe_checkout.handle_webhook(body, sig)
         logger.info(f"Webhook: {webhook_response.event_type} - {webhook_response.payment_status}")
+        
+        event_type = webhook_response.event_type
+        metadata = webhook_response.metadata or {}
+        
+        # Handle checkout completed
+        if event_type == 'checkout.session.completed' and webhook_response.payment_status == 'paid':
+            user_id = metadata.get('user_id')
+            plan = metadata.get('plan', 'starter')
+            if user_id:
+                await db.users.update_one({'user_id': user_id}, {'$set': {'plan': plan, 'updated_at': datetime.now(timezone.utc).isoformat()}})
+                await db.subscriptions.update_one(
+                    {'user_id': user_id},
+                    {'$set': {'plan': plan, 'billing_cycle_start': datetime.now(timezone.utc).isoformat(), 'next_reset_date': (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()}}
+                )
+                logger.info(f"User {user_id} upgraded to {plan}")
+        
+        # Handle payment transaction update
+        if webhook_response.session_id:
+            await db.payment_transactions.update_one(
+                {'session_id': webhook_response.session_id},
+                {'$set': {'payment_status': webhook_response.payment_status, 'event_type': event_type, 'updated_at': datetime.now(timezone.utc).isoformat()}}
+            )
+        
         return {"ok": True}
     except Exception as e:
         logger.error(f"Webhook error: {e}")
@@ -750,6 +976,268 @@ async def get_billing(user=Depends(get_current_user)):
         'transactions': transactions,
         'plan': user.get('plan', 'free'),
     }
+
+# ---------- CHATBOT TEMPLATES ----------
+@api_router.get("/templates")
+async def get_templates():
+    return CHATBOT_TEMPLATES
+
+@api_router.get("/templates/{template_id}")
+async def get_template(template_id: str):
+    for t in CHATBOT_TEMPLATES:
+        if t['id'] == template_id:
+            return t
+    raise HTTPException(status_code=404, detail="Template not found")
+
+@api_router.post("/chatbots/from-template")
+async def create_chatbot_from_template(request: Request, user=Depends(get_current_user)):
+    body = await request.json()
+    template_id = body.get('template_id')
+    template = None
+    for t in CHATBOT_TEMPLATES:
+        if t['id'] == template_id:
+            template = t
+            break
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    plan = user.get('plan', 'free')
+    limits = PLAN_LIMITS.get(plan, PLAN_LIMITS['free'])
+    count = await db.chatbots.count_documents({'user_id': user['user_id'], 'is_active': True})
+    if count >= limits['chatbots']:
+        raise HTTPException(status_code=403, detail=f"Plan limit reached. Max {limits['chatbots']} chatbot(s) on {plan} plan.")
+    
+    chatbot_id = str(uuid.uuid4())
+    custom_name = body.get('business_name', template['business_name'])
+    chatbot_doc = {
+        'chatbot_id': chatbot_id,
+        'user_id': user['user_id'],
+        'business_name': custom_name,
+        'faq_content': template['faq_content'],
+        'primary_language': template.get('primary_language', 'de'),
+        'auto_detect_language': True,
+        'widget_color': '#6366f1',
+        'show_gdpr_notice': True,
+        'is_active': True,
+        'template_id': template_id,
+        'created_at': datetime.now(timezone.utc).isoformat(),
+        'updated_at': datetime.now(timezone.utc).isoformat(),
+    }
+    await db.chatbots.insert_one(chatbot_doc)
+    chatbot_doc.pop('_id', None)
+    return chatbot_doc
+
+# ---------- TEAM MANAGEMENT (Agency) ----------
+@api_router.get("/team")
+async def get_team(user=Depends(get_current_user)):
+    plan = user.get('plan', 'free')
+    if plan != 'agency':
+        raise HTTPException(status_code=403, detail="Team management requires Agency plan")
+    members = await db.team_members.find({'owner_id': user['user_id']}, {'_id': 0}).to_list(100)
+    return members
+
+@api_router.post("/team/invite")
+async def invite_team_member(data: TeamInvite, user=Depends(get_current_user)):
+    plan = user.get('plan', 'free')
+    if plan != 'agency':
+        raise HTTPException(status_code=403, detail="Team management requires Agency plan")
+    
+    existing = await db.team_members.find_one({'owner_id': user['user_id'], 'email': data.email}, {'_id': 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Member already invited")
+    
+    member_id = f"member_{uuid.uuid4().hex[:12]}"
+    member_doc = {
+        'member_id': member_id,
+        'owner_id': user['user_id'],
+        'email': data.email,
+        'role': data.role,
+        'status': 'invited',
+        'invited_at': datetime.now(timezone.utc).isoformat(),
+        'accepted_at': None,
+    }
+    await db.team_members.insert_one(member_doc)
+    logger.info(f"[MOCK EMAIL] Team invite sent to {data.email}")
+    member_doc.pop('_id', None)
+    return member_doc
+
+@api_router.delete("/team/{member_id}")
+async def remove_team_member(member_id: str, user=Depends(get_current_user)):
+    result = await db.team_members.delete_one({'member_id': member_id, 'owner_id': user['user_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Member not found")
+    return {"ok": True}
+
+# ---------- EMBED.JS WIDGET ----------
+EMBED_JS_TEMPLATE = """
+(function() {
+  var script = document.currentScript;
+  var chatbotId = script.getAttribute('data-chatbot-id');
+  var lang = script.getAttribute('data-lang') || 'de';
+  var apiBase = script.src.replace('/api/embed.js', '');
+
+  var translations = {
+    de: { gdpr: 'Dieser Chat wird von ChatEmbed AI bereitgestellt. Nachrichten werden zur Verarbeitung an KI-Server übertragen.', consent: 'Verstanden & fortfahren', privacy: 'Datenschutz', placeholder: 'Nachricht eingeben...', powered: 'Powered by ChatEmbed AI', badge: 'KI-Chat' },
+    en: { gdpr: 'This chat is provided by ChatEmbed AI. Messages are transmitted to AI servers for processing.', consent: 'Understood & Continue', privacy: 'Privacy Policy', placeholder: 'Type a message...', powered: 'Powered by ChatEmbed AI', badge: 'AI Chat' }
+  };
+  var t = translations[lang] || translations.de;
+
+  var style = document.createElement('style');
+  style.textContent = `
+    #ce-widget-btn { position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; z-index:99998; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); transition:transform 0.2s; }
+    #ce-widget-btn:hover { transform:scale(1.08); }
+    #ce-widget-btn svg { fill:white; width:24px; height:24px; }
+    #ce-widget-window { position:fixed; bottom:90px; right:24px; width:360px; height:520px; background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 32px rgba(0,0,0,0.12); z-index:99999; display:none; flex-direction:column; overflow:hidden; font-family:'IBM Plex Sans',-apple-system,sans-serif; }
+    #ce-widget-window.ce-open { display:flex; animation:ce-slide-up 0.25s ease-out; }
+    @keyframes ce-slide-up { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    #ce-widget-header { padding:12px 16px; color:white; display:flex; align-items:center; justify-content:space-between; }
+    #ce-widget-header h4 { margin:0; font-size:14px; font-weight:700; }
+    #ce-widget-header span { font-size:11px; opacity:0.75; }
+    #ce-widget-close { background:none; border:none; color:white; cursor:pointer; font-size:18px; padding:4px; }
+    #ce-widget-gdpr { padding:20px; background:#f9fafb; border-bottom:1px solid #e5e7eb; flex:1; display:flex; flex-direction:column; justify-content:center; }
+    #ce-widget-gdpr p { font-size:12px; color:#0a0a0a; line-height:1.6; margin:0 0 16px; }
+    #ce-widget-gdpr button { color:white; border:none; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; }
+    #ce-widget-gdpr a { color:#002FA7; text-decoration:underline; }
+    #ce-widget-messages { flex:1; overflow-y:auto; padding:16px; }
+    .ce-msg { max-width:80%; padding:8px 12px; margin-bottom:8px; font-size:13px; line-height:1.5; word-wrap:break-word; }
+    .ce-msg-user { margin-left:auto; color:white; }
+    .ce-msg-bot { background:#f3f4f6; color:#0a0a0a; }
+    .ce-typing { display:flex; gap:4px; padding:8px 12px; background:#f3f4f6; width:fit-content; }
+    .ce-typing span { width:6px; height:6px; background:#9ca3af; border-radius:50%; animation:ce-bounce 1.2s infinite; }
+    .ce-typing span:nth-child(2) { animation-delay:0.2s; }
+    .ce-typing span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes ce-bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-4px)} }
+    #ce-widget-input { padding:12px; border-top:1px solid #e5e7eb; display:flex; gap:8px; }
+    #ce-widget-input input { flex:1; border:1px solid #e5e7eb; padding:8px 12px; font-size:13px; outline:none; }
+    #ce-widget-input input:focus { border-color:#002FA7; }
+    #ce-widget-input button { border:none; color:white; padding:8px 12px; cursor:pointer; font-size:13px; }
+    #ce-widget-footer { padding:6px 12px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; font-size:10px; color:#9ca3af; }
+    #ce-widget-footer a { color:#002FA7; text-decoration:none; }
+    @media(max-width:480px) { #ce-widget-window { bottom:0; right:0; left:0; width:100%; height:100%; } }
+  `;
+  document.head.appendChild(style);
+
+  var state = { open:false, consented:false, messages:[], typing:false, sessionId:'ce_'+Date.now()+'_'+Math.random().toString(36).substr(2,6) };
+  var color = '#6366f1';
+  var businessName = '';
+  var showGdpr = true;
+
+  // Fetch chatbot config
+  fetch(apiBase+'/api/chatbot-public/'+chatbotId).then(function(r){return r.json()}).then(function(d){
+    color = d.widget_color || '#6366f1';
+    businessName = d.business_name || '';
+    showGdpr = d.show_gdpr_notice !== false;
+    btn.style.background = color;
+    header.style.background = color;
+    sendBtn.style.background = color;
+    consentBtn.style.background = color;
+    headerTitle.textContent = businessName;
+    if(!showGdpr) { state.consented=true; gdprDiv.style.display='none'; msgDiv.style.display='block'; inputDiv.style.display='flex'; footerDiv.style.display='flex'; }
+  });
+
+  // Build DOM
+  var btn = document.createElement('button');
+  btn.id='ce-widget-btn';
+  btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>';
+  btn.style.background=color;
+  btn.onclick=function(){ state.open=!state.open; win.classList.toggle('ce-open',state.open); btn.style.display=state.open?'none':'flex'; };
+  document.body.appendChild(btn);
+
+  var win = document.createElement('div');
+  win.id='ce-widget-window';
+  
+  var header = document.createElement('div');
+  header.id='ce-widget-header';
+  header.style.background=color;
+  var headerTitle = document.createElement('h4');
+  headerTitle.textContent=businessName;
+  var headerBadge = document.createElement('span');
+  headerBadge.textContent=t.badge;
+  var headerLeft = document.createElement('div');
+  headerLeft.appendChild(headerTitle);
+  headerLeft.appendChild(headerBadge);
+  var closeBtn = document.createElement('button');
+  closeBtn.id='ce-widget-close';
+  closeBtn.innerHTML='&times;';
+  closeBtn.onclick=function(){ state.open=false; win.classList.remove('ce-open'); btn.style.display='flex'; };
+  header.appendChild(headerLeft);
+  header.appendChild(closeBtn);
+  win.appendChild(header);
+
+  var gdprDiv = document.createElement('div');
+  gdprDiv.id='ce-widget-gdpr';
+  var gdprText = document.createElement('p');
+  gdprText.innerHTML=t.gdpr+' <a href="/datenschutz" target="_blank">'+t.privacy+'</a>';
+  var consentBtn = document.createElement('button');
+  consentBtn.textContent=t.consent;
+  consentBtn.style.background=color;
+  consentBtn.onclick=function(){ state.consented=true; gdprDiv.style.display='none'; msgDiv.style.display='block'; inputDiv.style.display='flex'; footerDiv.style.display='flex'; };
+  gdprDiv.appendChild(gdprText);
+  gdprDiv.appendChild(consentBtn);
+  win.appendChild(gdprDiv);
+
+  var msgDiv = document.createElement('div');
+  msgDiv.id='ce-widget-messages';
+  msgDiv.style.display='none';
+  win.appendChild(msgDiv);
+
+  var inputDiv = document.createElement('div');
+  inputDiv.id='ce-widget-input';
+  inputDiv.style.display='none';
+  var inputField = document.createElement('input');
+  inputField.placeholder=t.placeholder;
+  inputField.onkeydown=function(e){ if(e.key==='Enter') sendMessage(); };
+  var sendBtn = document.createElement('button');
+  sendBtn.textContent='>';
+  sendBtn.style.background=color;
+  sendBtn.onclick=sendMessage;
+  inputDiv.appendChild(inputField);
+  inputDiv.appendChild(sendBtn);
+  win.appendChild(inputDiv);
+
+  var footerDiv = document.createElement('div');
+  footerDiv.id='ce-widget-footer';
+  footerDiv.style.display='none';
+  footerDiv.innerHTML='<span>'+t.powered+'</span><a href="/datenschutz" target="_blank">'+t.privacy+'</a>';
+  win.appendChild(footerDiv);
+  document.body.appendChild(win);
+
+  function addMessage(role, text) {
+    var div = document.createElement('div');
+    div.className='ce-msg ce-msg-'+(role==='user'?'user':'bot');
+    if(role==='user') div.style.background=color;
+    div.textContent=text;
+    msgDiv.appendChild(div);
+    msgDiv.scrollTop=msgDiv.scrollHeight;
+  }
+
+  function sendMessage() {
+    var text=inputField.value.trim();
+    if(!text) return;
+    inputField.value='';
+    addMessage('user',text);
+    state.messages.push({role:'user',content:text});
+    var typingDiv=document.createElement('div');
+    typingDiv.className='ce-typing';
+    typingDiv.innerHTML='<span></span><span></span><span></span>';
+    msgDiv.appendChild(typingDiv);
+    msgDiv.scrollTop=msgDiv.scrollHeight;
+    fetch(apiBase+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chatbot_id:chatbotId,message:text,session_id:state.sessionId,history:state.messages.slice(0,-1),widget_consent:true})}).then(function(r){return r.json()}).then(function(d){
+      typingDiv.remove();
+      var resp=d.response||'Error';
+      addMessage('assistant',resp);
+      state.messages.push({role:'assistant',content:resp});
+    }).catch(function(){
+      typingDiv.remove();
+      addMessage('assistant','Entschuldigung, ein Fehler ist aufgetreten.');
+    });
+  }
+})();
+"""
+
+@api_router.get("/embed.js")
+async def serve_embed_js():
+    return PlainTextResponse(EMBED_JS_TEMPLATE, media_type="application/javascript")
 
 # ---------- HEALTH ----------
 @api_router.get("/health")

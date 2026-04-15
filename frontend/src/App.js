@@ -21,6 +21,8 @@ import { PrivacyPolicy, Terms } from "./pages/LegalEN";
 import Billing from "./pages/Billing";
 import Analytics from "./pages/Analytics";
 import PrivacyCenter from "./pages/PrivacyCenter";
+import Templates from "./pages/Templates";
+import Team from "./pages/Team";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -68,6 +70,8 @@ function AppRouter() {
         <Route path="/dashboard/chatbot/:id" element={<ProtectedRoute><ChatbotEdit /></ProtectedRoute>} />
         <Route path="/dashboard/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+        <Route path="/dashboard/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
+        <Route path="/dashboard/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
         <Route path="/account/privacy" element={<ProtectedRoute><PrivacyCenter /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation, LANGUAGES } from '../lib/i18n';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/button';
@@ -8,6 +8,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Switch } from '../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { FileText, ArrowRight } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import ChatWidgetPreview from '../components/ChatWidgetPreview';
 
@@ -20,6 +21,11 @@ export default function ChatbotCreate() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [templateCount, setTemplateCount] = useState(0);
+
+  useEffect(() => {
+    api.getTemplates().then(data => setTemplateCount(data.length)).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +45,24 @@ export default function ChatbotCreate() {
   return (
     <DashboardLayout>
       <div data-testid="chatbot-create-page">
-        <h1 className="font-clash text-3xl font-bold tracking-tight text-[#0A0A0A] mb-8">{t.chatbot.create_title}</h1>
+        <h1 className="font-clash text-3xl font-bold tracking-tight text-[#0A0A0A] mb-4">{t.chatbot.create_title}</h1>
+
+        {/* Template banner */}
+        {templateCount > 0 && (
+          <Link to="/dashboard/templates" className="block mb-8">
+            <div className="border-2 border-[#002FA7] bg-[#002FA7]/5 p-5 flex items-center justify-between group hover:bg-[#002FA7]/10 transition-colors" data-testid="template-banner">
+              <div className="flex items-center gap-4">
+                <FileText size={24} className="text-[#002FA7]" />
+                <div>
+                  <p className="font-bold text-[#0A0A0A] text-sm">{t.templates.title} ({templateCount})</p>
+                  <p className="text-xs text-[#4B5563]">{t.templates.subtitle}</p>
+                </div>
+              </div>
+              <ArrowRight size={18} className="text-[#002FA7] group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+        )}
+
         {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 mb-6" data-testid="create-error">{error}</div>}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Form */}

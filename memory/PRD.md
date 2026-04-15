@@ -68,11 +68,18 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [x] Account deletion with 30-day grace period (already in place since Phase 1)
 - [x] Sidebar navigation updated with Conversations link
 
+### Phase 7 — Backend Refactoring (Apr 15, 2026)
+- [x] Refactored server.py from 1852-line monolith → 62-line thin entrypoint
+- [x] Created shared modules: database.py, config.py, models.py, auth_utils.py, templates_data.py
+- [x] Created 12 modular route files under routes/:
+  - auth.py, chatbots.py, chat.py, domain.py, analytics.py, billing.py
+  - conversations.py, team.py, privacy.py, templates.py, embed.py, ai_config.py
+- [x] Full regression test: 45/45 backend tests + all frontend tests passed (100%)
+
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- [ ] Backend Refactoring — Break server.py (~1800 lines) into modular routers:
-  - routes/auth.py, routes/chatbots.py, routes/domain.py, routes/analytics.py, routes/billing.py, routes/conversations.py
+- [x] ~~Backend Refactoring~~ — COMPLETED: server.py split into 12 modular routes + 5 shared modules
 
 ### P1 (High)
 - [ ] User Rights Center — "Download my data" JSON export from /account/privacy page
@@ -98,8 +105,8 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [ ] Status page
 
 ## Next Tasks
-1. Backend Refactoring (server.py → modular routes)
-2. User Rights Center (download my data JSON)
-3. Invoice PDF generation
-4. Unanswered question logging
-5. Embed.js domain lock
+1. User Rights Center (download my data JSON from /account/privacy)
+2. Invoice PDF generation (German tax compliant)
+3. Unanswered question logging
+4. Embed.js domain lock (widget only on verified domain)
+5. Data retention cron job

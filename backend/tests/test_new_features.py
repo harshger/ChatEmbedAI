@@ -10,7 +10,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://embed-widget-de.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://gdpr-growth-hub.preview.emergentagent.com')
 
 # Test credentials
 TEST_EMAIL = "test@chatembed.de"
@@ -176,7 +176,7 @@ class TestChangePlan:
         """POST /api/billing/change-plan for paid plan returns Stripe checkout URL"""
         response = requests.post(f"{BASE_URL}/api/billing/change-plan", headers=auth_headers, json={
             "plan": "starter",
-            "origin_url": "https://embed-widget-de.preview.emergentagent.com"
+            "origin_url": "https://gdpr-growth-hub.preview.emergentagent.com"
         })
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         

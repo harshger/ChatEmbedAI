@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class ChatEmbedAPITester:
-    def __init__(self, base_url="https://embed-widget-de.preview.emergentagent.com"):
+    def __init__(self, base_url="https://gdpr-growth-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.session_token = None

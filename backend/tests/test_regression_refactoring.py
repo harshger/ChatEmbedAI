@@ -24,7 +24,7 @@ import os
 import uuid
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://embed-widget-de.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://gdpr-growth-hub.preview.emergentagent.com')
 
 # Test credentials from test_credentials.md
 TEST_EMAIL = "test@chatembed.de"

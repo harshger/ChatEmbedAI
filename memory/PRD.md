@@ -42,38 +42,42 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [x] Billing page with payment history
 - [x] Consent logging to MongoDB
 - [x] Rate limiting and plan message limits
+- [x] **Chatbot Templates (6 German business types)**: Bäckerei, Zahnarzt, Restaurant, Friseur, Immobilien, Anwalt
+- [x] **Standalone embed.js widget** served from /api/embed.js (self-contained, no framework deps)
+- [x] **Improved Stripe webhooks** with subscription lifecycle handling
+- [x] **Team management** page (Agency plan gated) with invite/remove
+- [x] **Template banner** on chatbot creation page linking to templates
+- [x] **CORS fix** for cross-origin auth (removed credentials:include, using Bearer tokens)
 
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- [ ] Embeddable widget (embed.js standalone script)
 - [ ] Email verification flow (double opt-in)
-- [ ] Stripe webhook handling for subscription lifecycle
+- [ ] Password reset flow
 
 ### P1 (High)
 - [ ] Local AI (Ollama) integration as primary AI engine
-- [ ] Team management (Agency plan sub-accounts)
-- [ ] Invoice PDF generation (German tax compliant)
-- [ ] Password reset flow
+- [ ] Invoice PDF generation (German tax compliant with §257 HGB)
 - [ ] Data retention jobs (auto-delete messages after 90 days)
+- [ ] Widget customization (colors, logo, branding removal for paid)
 
 ### P2 (Medium)
 - [ ] Advanced analytics (word cloud, peak hours, language pie chart)
 - [ ] CSV export for analytics
-- [ ] Widget customization (colors, logo, branding removal)
-- [ ] Docker Compose deployment setup
-- [ ] Nginx configuration for self-hosting
+- [ ] Docker Compose deployment setup for self-hosting
+- [ ] Nginx configuration
+- [ ] Domain whitelist per chatbot (CORS)
 
 ### P3 (Nice to have)
 - [ ] 2FA support
 - [ ] Redis caching for FAQ responses
-- [ ] Domain whitelist per chatbot (CORS)
 - [ ] robots.txt and sitemap.xml
 - [ ] Backup scripts
+- [ ] More chatbot templates (Hotel, Autowerkstatt, Steuerberater)
 
 ## Next Tasks
-1. Build the standalone embed.js widget script
-2. Implement Stripe webhook for subscription updates
-3. Add Ollama/local AI as primary engine with Claude fallback
-4. Invoice PDF generation
-5. Team management for Agency plan
+1. Implement email verification (double opt-in) flow
+2. Add password reset functionality
+3. Build Ollama/local AI integration as primary engine
+4. Invoice PDF generation with German VAT
+5. More chatbot templates for additional industries

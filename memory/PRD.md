@@ -53,6 +53,16 @@ Growth plan: 7-day free trial + 14-day EU money-back guarantee (Widerrufsrecht)
 - [x] **Upgrade CTA**: Drives users to Growth plan after showing free insights
 - [x] **i18n**: All new strings in both DE and EN
 
+### Phase 12 — Anti-Abuse Protection (Apr 15, 2026)
+- [x] **Trial Limit: 2 Runs**: Trial users limited to 2 skill runs (was 50), with clear upgrade CTA
+- [x] **Pro-Rata Refund Tiers**: 0 use=100%, 1-5=75%, 6-15=50%, 16-30=25%, 31+=0%
+- [x] **Cancel Preview**: GET /api/billing/cancel-preview shows usage + refund calculation
+- [x] **Cancel Endpoint**: POST /api/billing/cancel with pro-rata refund and GDPR service consent
+- [x] **Revert Cancellation**: POST /api/billing/revert-cancel to undo cancellation
+- [x] **Hidden Cancel UI**: Subtle "Plan kündigen" link in billing page (not prominent, EU-legal)
+- [x] **Cancellation Banner**: Yellow warning with revert button after cancellation
+- [x] **Refund Transactions**: Stored as negative payment_transactions (MOCKED Stripe refund)
+
 ## Code Architecture
 ```
 /app/
@@ -93,7 +103,6 @@ Growth plan: 7-day free trial + 14-day EU money-back guarantee (Widerrufsrecht)
 ## Prioritized Backlog
 
 ### P1 (High)
-- [ ] 14-day EU cooling-off automated refund via Stripe webhook
 - [ ] Dashboard reminder banner for users with scan results (dismissible)
 - [ ] Rescan in settings page (website URL edit + re-analyze)
 

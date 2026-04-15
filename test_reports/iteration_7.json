@@ -1,0 +1,115 @@
+{
+  "summary": "REGRESSION TEST PASSED: Backend refactoring from monolith (1852 lines) to modular architecture (12 route modules) verified. All 45 backend API tests passed (100%). All frontend UI tests passed (100%). The refactoring preserved all endpoint behavior identically.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "GET /api/health returns ok status",
+    "POST /api/auth/login returns session_token",
+    "POST /api/auth/login rejects invalid credentials",
+    "GET /api/auth/me returns user profile (authenticated)",
+    "GET /api/auth/me returns 401 (unauthenticated)",
+    "POST /api/auth/logout works correctly",
+    "POST /api/auth/forgot-password returns mock_token",
+    "POST /api/auth/reset-password rejects invalid token",
+    "POST /api/auth/verify-email rejects invalid token",
+    "POST /api/auth/resend-verification returns mock_token",
+    "POST /api/auth/register rejects duplicate email",
+    "GET /api/chatbots lists chatbots (authenticated)",
+    "GET /api/chatbots returns 401 (unauthenticated)",
+    "GET /api/chatbots/{id} returns chatbot detail",
+    "GET /api/chatbot-public/{id} returns public info with owner_plan",
+    "PUT /api/chatbots/{id} updates chatbot",
+    "GET /api/domain/status returns domain info",
+    "GET /api/domain/status returns 401 (unauthenticated)",
+    "POST /api/domain/init initializes verification",
+    "POST /api/domain/verify attempts verification",
+    "GET /api/dashboard/stats returns stats",
+    "GET /api/dashboard/stats returns 401 (unauthenticated)",
+    "GET /api/analytics returns 403 (pro gated)",
+    "GET /api/billing returns billing info",
+    "GET /api/billing returns 401 (unauthenticated)",
+    "GET /api/billing/plans returns 4 plans",
+    "POST /api/billing/change-plan handles plan change",
+    "GET /api/conversations returns paginated list",
+    "GET /api/conversations returns 401 (unauthenticated)",
+    "GET /api/conversations/{session_id} returns thread",
+    "GET /api/conversations/non_existent returns 404",
+    "GET /api/conversations/export returns CSV",
+    "POST /api/maintenance/cleanup-expired cleans messages",
+    "GET /api/team returns 403 (agency gated)",
+    "GET /api/team returns 401 (unauthenticated)",
+    "POST /api/consent logs consent",
+    "GET /api/user/export exports user data",
+    "GET /api/user/export returns 401 (unauthenticated)",
+    "GET /api/templates returns 6 templates",
+    "GET /api/templates/{id} returns specific template",
+    "GET /api/templates/non_existent returns 404",
+    "GET /api/ai/config returns config",
+    "GET /api/ai/config returns 401 (unauthenticated)",
+    "PUT /api/ai/config updates config",
+    "GET /api/embed.js returns JavaScript widget code",
+    "Frontend: Login page loads and accepts credentials",
+    "Frontend: Dashboard loads with usage bar (data-testid='usage-bar')",
+    "Frontend: Sidebar has all navigation links (Dashboard, New Chatbot, Templates, Domain, Conversations, Analytics, Billing, AI Engine, Team, Privacy)",
+    "Frontend: Conversations page loads with data-testid='conversations-page'",
+    "Frontend: Search input present with data-testid='search-input'",
+    "Frontend: Export CSV button present with data-testid='export-csv-btn'",
+    "Frontend: 3 conversations displayed in list"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_regression_refactoring.py",
+    "/app/test_reports/pytest/pytest_results_regression.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_regression_refactoring.py"
+  ],
+  "success_rate": {
+    "backend": "100% (45/45 tests passed)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "email": "test@chatembed.de",
+    "password": "TestPass123!",
+    "chatbot_id": "604f4448-26d4-4a26-9df9-7385c0abd3b2"
+  },
+  "seed_data_creation": "No new seed data created - used existing 12 test messages across 3 sessions",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend refactoring from monolith to modular architecture is complete and verified. All 12 route modules (auth, chatbots, chat, domain, analytics, billing, conversations, team, privacy, templates, embed, ai_config) are working correctly. The thin server.py entrypoint (62 lines) properly imports and includes all routers. Email sending remains MOCKED.",
+  "refactoring_verification": {
+    "original_file": "server.py (1852 lines)",
+    "new_structure": {
+      "server.py": "62 lines - thin entrypoint",
+      "database.py": "MongoDB connection",
+      "config.py": "Configuration constants",
+      "models.py": "Pydantic models",
+      "auth_utils.py": "Auth utilities",
+      "templates_data.py": "Chatbot templates",
+      "routes/": "12 route modules"
+    },
+    "route_modules_tested": [
+      "routes/auth.py",
+      "routes/chatbots.py",
+      "routes/chat.py",
+      "routes/domain.py",
+      "routes/analytics.py",
+      "routes/billing.py",
+      "routes/conversations.py",
+      "routes/team.py",
+      "routes/privacy.py",
+      "routes/templates.py",
+      "routes/embed.py",
+      "routes/ai_config.py"
+    ],
+    "behavior_preserved": true
+  }
+}

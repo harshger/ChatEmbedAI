@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Switch } from '../components/ui/switch';
-import { Plus, MessageSquare, Bot, Activity, Globe, Edit, Code, Eye, Trash2, Mail, CheckCircle } from 'lucide-react';
+import { Plus, MessageSquare, Bot, Activity, Globe, Edit, Code, Eye, Trash2, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 export default function Dashboard() {
@@ -116,6 +116,22 @@ export default function Dashboard() {
             <CheckCircle size={20} className="text-green-600" />
             <p className="text-sm font-bold text-green-700">{t.auth.verify_success}</p>
           </div>
+        )}
+
+        {/* Domain Verification Banner */}
+        {user && !user.domain_verified && (
+          <Link to="/dashboard/verify-domain" className="block">
+            <div className="border-2 border-yellow-400 bg-yellow-50 p-5 flex items-center justify-between hover:bg-yellow-100 transition-colors" data-testid="domain-verify-banner">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-yellow-500 flex items-center justify-center flex-shrink-0"><AlertTriangle size={20} className="text-white" /></div>
+                <div>
+                  <p className="font-bold text-sm text-yellow-900">Domain not verified</p>
+                  <p className="text-xs text-yellow-700">{user.domain ? `Verify ${user.domain} to activate your chatbot widget.` : 'Set your website URL and verify your domain.'}</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-yellow-800 flex-shrink-0">Verify Now &rarr;</span>
+            </div>
+          </Link>
         )}
 
         {/* Welcome */}

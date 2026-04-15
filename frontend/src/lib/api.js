@@ -60,6 +60,11 @@ export const api = {
   getAIConfig: () => fetch(`${API}/ai/config`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
   updateAIConfig: (data) => fetch(`${API}/ai/config`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
 
+  // Domain Verification
+  getDomainStatus: () => fetch(`${API}/domain/status`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  initDomainVerification: (data) => fetch(`${API}/domain/init`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  verifyDomain: (method) => fetch(`${API}/domain/verify`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify({ method }) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
   // Billing Management
   getPlans: () => fetch(`${API}/billing/plans`).then(r => { if (!r.ok) throw r; return r.json(); }),
   changePlan: (data) => fetch(`${API}/billing/change-plan`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),

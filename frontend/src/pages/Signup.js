@@ -13,7 +13,7 @@ export default function Signup() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', company_name: '', terms_accepted: false, marketing_consent: false });
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', company_name: '', website_url: '', terms_accepted: false, marketing_consent: false });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
@@ -91,6 +91,11 @@ export default function Signup() {
               <div>
                 <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">{t.auth.company}</Label>
                 <Input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} className="rounded-none border-gray-300" data-testid="signup-company" />
+              </div>
+              <div>
+                <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">{t.auth.website} *</Label>
+                <Input value={form.website_url} onChange={e => setForm(f => ({ ...f, website_url: e.target.value }))} required placeholder="https://www.ihre-firma.de" className="rounded-none border-gray-300" data-testid="signup-website" />
+                <p className="text-xs text-[#4B5563] mt-1">{t.auth.website_hint}</p>
               </div>
               <div className="flex items-start gap-3">
                 <Checkbox id="terms" checked={form.terms_accepted} onCheckedChange={v => setForm(f => ({ ...f, terms_accepted: v }))} data-testid="terms-checkbox" />

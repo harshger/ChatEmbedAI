@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, labelKey: 'Dashboard' },
   { path: '/dashboard/new', icon: Plus, labelKey: 'New Chatbot' },
   { path: '/dashboard/templates', icon: FileText, labelKey: 'Templates' },
+  { path: '/dashboard/verify-domain', icon: Globe, labelKey: 'Domain' },
   { path: '/dashboard/analytics', icon: BarChart3, labelKey: 'Analytics' },
   { path: '/dashboard/billing', icon: CreditCard, labelKey: 'Billing' },
   { path: '/dashboard/ai-settings', icon: Cpu, labelKey: 'AI Engine' },

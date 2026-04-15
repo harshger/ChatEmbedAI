@@ -15,6 +15,8 @@ from datetime import datetime, timezone, timedelta
 import httpx
 import bcrypt
 import jwt
+import dns.resolver
+import re
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -41,6 +43,7 @@ class UserRegister(BaseModel):
     password: str
     full_name: str
     company_name: Optional[str] = None
+    website_url: str
     marketing_consent: bool = False
     terms_accepted: bool = True
 
@@ -110,6 +113,9 @@ class VerifyEmailRequest(BaseModel):
 
 class ResendVerificationRequest(BaseModel):
     email: str
+
+class DomainVerifyRequest(BaseModel):
+    method: str  # 'meta_tag' or 'dns_txt'
 
 # ---------- CHATBOT TEMPLATES ----------
 CHATBOT_TEMPLATES = [
@@ -394,12 +400,30 @@ async def register(data: UserRegister):
         raise HTTPException(status_code=400, detail="Email already registered")
     
     user_id = f"user_{uuid.uuid4().hex[:12]}"
+    
+    # Normalize website URL
+    website = data.website_url.strip()
+    if website and not website.startswith(('http://', 'https://')):
+        website = f"https://{website}"
+    
+    # Extract domain from URL
+    domain = ''
+    if website:
+        domain = re.sub(r'^https?://(www\.)?', '', website).split('/')[0].strip()
+    
+    # Generate domain verification token
+    domain_token = f"ce-verify-{uuid.uuid4().hex[:16]}"
+    
     user_doc = {
         'user_id': user_id,
         'email': data.email,
         'password_hash': hash_password(data.password),
         'full_name': data.full_name,
         'company_name': data.company_name or '',
+        'website_url': website,
+        'domain': domain,
+        'domain_verified': False,
+        'domain_verification_token': domain_token,
         'country': 'DE',
         'marketing_consent': data.marketing_consent,
         'marketing_consent_at': datetime.now(timezone.utc).isoformat() if data.marketing_consent else None,
@@ -452,6 +476,9 @@ async def register(data: UserRegister):
         'session_token': session_token,
         'email_verified': False,
         'mock_verify_token': verify_token,
+        'domain': domain,
+        'domain_verified': False,
+        'domain_verification_token': domain_token,
     }
 
 @api_router.post("/auth/login")
@@ -478,6 +505,8 @@ async def login(data: UserLogin):
         'token': token,
         'session_token': session_token,
         'email_verified': user.get('email_verified', False),
+        'domain': user.get('domain', ''),
+        'domain_verified': user.get('domain_verified', False),
     }
 
 @api_router.post("/auth/google-session")
@@ -511,6 +540,10 @@ async def google_session(request: Request):
             'password_hash': '',
             'full_name': name,
             'company_name': '',
+            'website_url': '',
+            'domain': '',
+            'domain_verified': False,
+            'domain_verification_token': f"ce-verify-{uuid.uuid4().hex[:16]}",
             'country': 'DE',
             'picture': picture,
             'marketing_consent': False,
@@ -566,6 +599,10 @@ async def get_me(user=Depends(get_current_user)):
         'marketing_consent': user.get('marketing_consent', False),
         'created_at': user.get('created_at', ''),
         'email_verified': user.get('email_verified', False),
+        'website_url': user.get('website_url', ''),
+        'domain': user.get('domain', ''),
+        'domain_verified': user.get('domain_verified', False),
+        'domain_verification_token': user.get('domain_verification_token', ''),
     }
 
 @api_router.post("/auth/logout")
@@ -655,6 +692,123 @@ async def reset_password(data: ResetPasswordRequest):
     await db.user_sessions.delete_many({'user_id': token_doc['user_id']})
     return {"ok": True, "message": "Password reset successfully. Please login with your new password."}
 
+# ---------- DOMAIN VERIFICATION ----------
+@api_router.get("/domain/status")
+async def get_domain_status(user=Depends(get_current_user)):
+    return {
+        'domain': user.get('domain', ''),
+        'website_url': user.get('website_url', ''),
+        'domain_verified': user.get('domain_verified', False),
+        'domain_verification_token': user.get('domain_verification_token', ''),
+    }
+
+@api_router.post("/domain/init")
+async def init_domain_verification(request: Request, user=Depends(get_current_user)):
+    body = await request.json()
+    website = body.get('website_url', '').strip()
+    if not website:
+        raise HTTPException(status_code=400, detail="Website URL is required")
+    if not website.startswith(('http://', 'https://')):
+        website = f"https://{website}"
+    domain = re.sub(r'^https?://(www\.)?', '', website).split('/')[0].strip()
+    if not domain or '.' not in domain:
+        raise HTTPException(status_code=400, detail="Invalid domain")
+    
+    # Generate or reuse token
+    existing_token = user.get('domain_verification_token', '')
+    token = existing_token if existing_token else f"ce-verify-{uuid.uuid4().hex[:16]}"
+    
+    await db.users.update_one({'user_id': user['user_id']}, {'$set': {
+        'website_url': website, 'domain': domain,
+        'domain_verification_token': token, 'domain_verified': False,
+        'updated_at': datetime.now(timezone.utc).isoformat(),
+    }})
+    
+    return {
+        'domain': domain,
+        'website_url': website,
+        'verification_token': token,
+        'meta_tag': f'<meta name="chatembed-verify" content="{token}">',
+        'dns_txt': f'chatembed-verify={token}',
+    }
+
+@api_router.post("/domain/verify")
+async def verify_domain(data: DomainVerifyRequest, user=Depends(get_current_user)):
+    domain = user.get('domain', '')
+    website_url = user.get('website_url', '')
+    token = user.get('domain_verification_token', '')
+    
+    if not domain or not token:
+        raise HTTPException(status_code=400, detail="No domain configured. Set your website URL first.")
+    
+    if user.get('domain_verified'):
+        return {"ok": True, "verified": True, "message": "Domain already verified."}
+    
+    verified = False
+    details = ''
+    
+    if data.method == 'meta_tag':
+        # Check meta tag on website
+        try:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client_http:
+                # Try both www and non-www
+                urls_to_try = [website_url]
+                if 'www.' not in website_url:
+                    urls_to_try.append(website_url.replace('https://', 'https://www.'))
+                
+                for url in urls_to_try:
+                    try:
+                        resp = await client_http.get(url)
+                        if resp.status_code == 200:
+                            html = resp.text
+                            # Check for the meta tag
+                            if f'chatembed-verify' in html and token in html:
+                                verified = True
+                                details = f'Meta tag found on {url}'
+                                break
+                    except Exception:
+                        continue
+                
+                if not verified:
+                    details = f'Meta tag not found. Add <meta name="chatembed-verify" content="{token}"> to your homepage <head>.'
+        except Exception as e:
+            details = f'Could not reach {website_url}. Make sure your website is accessible.'
+    
+    elif data.method == 'dns_txt':
+        # Check DNS TXT record
+        try:
+            answers = dns.resolver.resolve(domain, 'TXT')
+            for rdata in answers:
+                for txt_string in rdata.strings:
+                    txt_value = txt_string.decode('utf-8', errors='ignore')
+                    if f'chatembed-verify={token}' in txt_value:
+                        verified = True
+                        details = f'DNS TXT record found for {domain}'
+                        break
+                if verified:
+                    break
+            if not verified:
+                details = f'DNS TXT record not found. Add "chatembed-verify={token}" as a TXT record for {domain}.'
+        except dns.resolver.NXDOMAIN:
+            details = f'Domain {domain} does not exist.'
+        except dns.resolver.NoAnswer:
+            details = f'No TXT records found for {domain}.'
+        except Exception as e:
+            details = f'DNS lookup failed: {str(e)}'
+    else:
+        raise HTTPException(status_code=400, detail="Invalid method. Use 'meta_tag' or 'dns_txt'.")
+    
+    if verified:
+        await db.users.update_one({'user_id': user['user_id']}, {'$set': {
+            'domain_verified': True,
+            'domain_verified_at': datetime.now(timezone.utc).isoformat(),
+            'domain_verified_method': data.method,
+            'updated_at': datetime.now(timezone.utc).isoformat(),
+        }})
+        logger.info(f"Domain {domain} verified for user {user['user_id']} via {data.method}")
+    
+    return {"ok": True, "verified": verified, "details": details}
+
 # ---------- CHATBOT ROUTES ----------
 @api_router.post("/chatbots")
 async def create_chatbot(data: ChatbotCreate, user=Depends(get_current_user)):
@@ -667,6 +821,9 @@ async def create_chatbot(data: ChatbotCreate, user=Depends(get_current_user)):
     
     if len(data.faq_content) > 100000:
         raise HTTPException(status_code=400, detail="FAQ content exceeds 100,000 character limit")
+    
+    # Domain verification check - chatbot created but widget won't serve on unverified domains
+    domain_verified = user.get('domain_verified', False)
     
     chatbot_id = str(uuid.uuid4())
     chatbot_doc = {
@@ -833,7 +990,7 @@ BEHAVIOR RULES:
 
 # ---------- PUBLIC CHATBOT INFO (for widget) ----------
 @api_router.get("/chatbot-public/{chatbot_id}")
-async def get_public_chatbot(chatbot_id: str):
+async def get_public_chatbot(chatbot_id: str, request: Request):
     chatbot = await db.chatbots.find_one({'chatbot_id': chatbot_id, 'is_active': True}, {'_id': 0, 'faq_content': 0})
     if not chatbot:
         raise HTTPException(status_code=404, detail="Chatbot not found")
@@ -842,6 +999,8 @@ async def get_public_chatbot(chatbot_id: str):
     plan = owner.get('plan', 'free') if owner else 'free'
     chatbot['owner_plan'] = plan
     chatbot['can_hide_branding'] = plan in ('starter', 'pro', 'agency')
+    chatbot['domain_verified'] = owner.get('domain_verified', False) if owner else False
+    chatbot['allowed_domain'] = owner.get('domain', '') if owner else ''
     return chatbot
 
 # ---------- STRIPE PAYMENTS ----------

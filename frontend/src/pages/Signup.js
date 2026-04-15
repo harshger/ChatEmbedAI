@@ -13,7 +13,7 @@ export default function Signup() {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', password: '', full_name: '', company_name: '', website_url: '', terms_accepted: false, marketing_consent: false });
+  const [form, setForm] = useState({ email: '', password: '', full_name: '', company_name: '', website_url: '', terms_accepted: false, marketing_consent: false, scan_consent: false });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
@@ -31,7 +31,7 @@ export default function Signup() {
         setMockVerifyToken(data.mock_verify_token);
         setRegistered(true);
       } else {
-        navigate('/dashboard');
+        navigate(form.website_url && form.scan_consent ? '/dashboard/welcome' : '/dashboard');
       }
     } catch {
       setError('Registration failed. Email may already be registered.');
@@ -67,7 +67,7 @@ export default function Signup() {
                     </Link>
                   </div>
                 )}
-                <button onClick={() => navigate('/dashboard')} className="mt-4 bg-[#002FA7] text-white px-6 py-3 font-bold hover:bg-[#0040D6] transition-colors w-full" data-testid="go-to-dashboard-btn">
+                <button onClick={() => navigate(form.website_url && form.scan_consent ? '/dashboard/welcome' : '/dashboard')} className="mt-4 bg-[#002FA7] text-white px-6 py-3 font-bold hover:bg-[#0040D6] transition-colors w-full" data-testid="go-to-dashboard-btn">
                   Go to Dashboard
                 </button>
               </div>
@@ -93,10 +93,16 @@ export default function Signup() {
                 <Input value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} className="rounded-none border-gray-300" data-testid="signup-company" />
               </div>
               <div>
-                <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">{t.auth.website} *</Label>
-                <Input value={form.website_url} onChange={e => setForm(f => ({ ...f, website_url: e.target.value }))} required placeholder="https://www.ihre-firma.de" className="rounded-none border-gray-300" data-testid="signup-website" />
-                <p className="text-xs text-[#4B5563] mt-1">{t.auth.website_hint}</p>
+                <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">{t.auth.website}</Label>
+                <Input value={form.website_url} onChange={e => setForm(f => ({ ...f, website_url: e.target.value }))} placeholder="https://www.ihre-firma.de" className="rounded-none border-gray-300" data-testid="signup-website" />
+                <p className="text-xs text-[#4B5563] mt-1">{t.auth.website_scan_hint}</p>
               </div>
+              {form.website_url && (
+                <div className="flex items-start gap-3 bg-[#F9FAFB] p-3 border border-gray-200">
+                  <Checkbox id="scan_consent" checked={form.scan_consent} onCheckedChange={v => setForm(f => ({ ...f, scan_consent: v }))} data-testid="scan-consent-checkbox" />
+                  <label htmlFor="scan_consent" className="text-xs text-[#4B5563] leading-tight">{t.auth.scan_consent}</label>
+                </div>
+              )}
               <div className="flex items-start gap-3">
                 <Checkbox id="terms" checked={form.terms_accepted} onCheckedChange={v => setForm(f => ({ ...f, terms_accepted: v }))} data-testid="terms-checkbox" />
                 <label htmlFor="terms" className="text-sm text-[#4B5563] leading-tight">

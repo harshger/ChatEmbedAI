@@ -7,8 +7,9 @@ class UserRegister(BaseModel):
     password: str
     full_name: str
     company_name: Optional[str] = None
-    website_url: str
+    website_url: Optional[str] = ''
     marketing_consent: bool = False
+    scan_consent: bool = False
     terms_accepted: bool = True
 
 

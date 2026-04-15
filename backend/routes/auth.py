@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Request, Depends, BackgroundTasks
 from datetime import datetime, timezone, timedelta
 import uuid
 import re
@@ -15,14 +15,14 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register")
-async def register(data: UserRegister):
+async def register(data: UserRegister, background_tasks: BackgroundTasks):
     existing = await db.users.find_one({'email': data.email}, {'_id': 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user_id = f"user_{uuid.uuid4().hex[:12]}"
 
-    website = data.website_url.strip()
+    website = (data.website_url or '').strip()
     if website and not website.startswith(('http://', 'https://')):
         website = f"https://{website}"
 
@@ -82,6 +82,20 @@ async def register(data: UserRegister):
     })
     logger.info(f"[MOCK EMAIL] Verification email sent to {data.email} - Token: {verify_token}")
 
+    # Trigger website scan if consent granted
+    if website and data.scan_consent:
+        from routes.marketing import process_website_scan
+        background_tasks.add_task(process_website_scan, user_id, website)
+        # Log GDPR consent
+        await db.consent_logs.insert_one({
+            'consent_id': str(uuid.uuid4()),
+            'user_id': user_id,
+            'consent_type': 'website_scan_signup',
+            'url': website,
+            'granted': True,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+        })
+
     return {
         'user_id': user_id,
         'email': data.email,
@@ -94,6 +108,7 @@ async def register(data: UserRegister):
         'domain': domain,
         'domain_verified': False,
         'domain_verification_token': domain_token,
+        'scanning': bool(website and data.scan_consent),
     }
 
 

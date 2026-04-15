@@ -87,6 +87,14 @@ export const api = {
   runMarketingSkill: (data) => fetch(`${API}/marketing/run`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
   saveMarketingResult: (data) => fetch(`${API}/marketing/save`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
   getMarketingHistory: () => fetch(`${API}/marketing/history`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  getMarketingProfile: () => fetch(`${API}/marketing/profile`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  saveMarketingProfile: (data) => fetch(`${API}/marketing/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+
+  // Website Scan
+  getWebsiteScan: () => fetch(`${API}/marketing/website-scan`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  startWebsiteScan: (data) => fetch(`${API}/marketing/website-scan/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify(data) }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  rescanWebsite: () => fetch(`${API}/marketing/rescan`, { method: 'POST', headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
+  dismissScanBanner: () => fetch(`${API}/marketing/dismiss-banner`, { method: 'POST', headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.json(); }),
 };
 
 export default api;

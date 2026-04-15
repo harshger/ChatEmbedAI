@@ -6,7 +6,7 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 ## Architecture
 - **Frontend**: React + Tailwind CSS + Shadcn UI
 - **Backend**: FastAPI (Python) + MongoDB
-- **AI**: Claude Sonnet via Emergent LLM Key (fallback; local AI planned as primary)
+- **AI**: Claude Sonnet via Emergent LLM Key (active) + Ollama config (self-hosted option)
 - **Payments**: Stripe (test key, subscription model)
 - **Auth**: JWT + Google OAuth via Emergent Auth
 - **Email**: Mocked (console logging)
@@ -46,40 +46,38 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [x] Rate limiting and plan message limits
 
 ### Phase 2 — Templates & Team (April 15, 2026)
-- [x] Chatbot Templates (6 German business types): Bäckerei, Zahnarzt, Restaurant, Friseur, Immobilien, Anwalt
-- [x] Standalone embed.js widget served from /api/embed.js (self-contained, no framework deps)
-- [x] Improved Stripe webhooks with subscription lifecycle handling
-- [x] Team management page (Agency plan gated) with invite/remove
-- [x] Template banner on chatbot creation page linking to templates
-- [x] CORS fix for cross-origin auth (removed credentials:include, using Bearer tokens)
+- [x] Chatbot Templates (6 German business types)
+- [x] Standalone embed.js widget
+- [x] Team management page (Agency plan gated)
+- [x] CORS fix for cross-origin auth
 
 ### Phase 3 — Auth Flows & Analytics (April 15, 2026)
-- [x] Email verification flow (double opt-in) with mocked emails + demo token display
-- [x] Password reset flow (forgot password → token → reset) with mocked emails
-- [x] Enhanced Analytics with recharts: messages/day bar chart, language distribution pie chart, peak hours bar chart, top 10 questions table, per-chatbot stats
-- [x] Forgot Password page (/forgot-password)
-- [x] Reset Password page (/reset-password?token=xxx)
-- [x] Verify Email page (/verify-email?token=xxx)
-- [x] Signup page shows verification notice with mock verify link
-- [x] Login page has "Forgot Password?" link
-- [x] /api/auth/me and /api/auth/login return email_verified field
+- [x] Email verification flow (double opt-in) with mocked emails
+- [x] Password reset flow with mocked emails
+- [x] Enhanced Analytics with recharts (bar charts, pie chart, peak hours, top questions)
+- [x] Forgot Password, Reset Password, Verify Email pages
+
+### Phase 4 — Widget Customization, AI Engine & Billing (April 15, 2026)
+- [x] Dashboard email verification banner with one-click verify (demo mode)
+- [x] Widget customization: color picker, quick colors, corner style, position, greeting, logo URL
+- [x] Branding removal toggle (gated to Starter+ plan)
+- [x] Enhanced Billing page with plan comparison grid, upgrade/downgrade buttons
+- [x] AI Engine settings page (Claude vs Ollama) with config fields
+- [x] AI config endpoints (GET/PUT /api/ai/config)
+- [x] Billing management endpoints (GET /api/billing/plans, POST /api/billing/change-plan)
+- [x] ChatbotEdit now has 4 tabs: Edit, Widget Design, Embed Code, Preview
+- [x] Public chatbot endpoint returns owner_plan and can_hide_branding
 
 ## Prioritized Backlog
 
-### P0 (Critical)
-- All P0 items completed!
-
 ### P1 (High)
-- [ ] Local AI (Ollama) integration as primary AI engine
 - [ ] Invoice PDF generation (German tax compliant with §257 HGB)
 - [ ] Data retention jobs (auto-delete messages after 90 days)
-- [ ] Widget customization (colors, logo, branding removal for paid)
-- [ ] Stripe Checkout & Billing Portal wire-up (ensure UI triggers checkout correctly)
+- [ ] Integrate Ollama into chat endpoint (use engine from ai_config, fall back to Claude)
 
 ### P2 (Medium)
 - [ ] CSV export for analytics
 - [ ] Docker Compose deployment setup for self-hosting
-- [ ] Nginx configuration
 - [ ] Domain whitelist per chatbot (CORS)
 - [ ] Chatbot-Analyse Enhancement (template usage statistics)
 
@@ -91,8 +89,8 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [ ] More chatbot templates (Hotel, Autowerkstatt, Steuerberater)
 
 ## Next Tasks
-1. Widget customization (colors, logo, branding removal for paid)
-2. Stripe Checkout & Billing Portal proper wire-up
-3. Build Ollama/local AI integration as primary engine
-4. Invoice PDF generation with German VAT
-5. Data retention jobs
+1. Invoice PDF generation with German VAT
+2. Data retention jobs (auto-delete messages after 90 days)
+3. Integrate Ollama into the chat endpoint based on ai_config
+4. CSV export for analytics
+5. More chatbot templates

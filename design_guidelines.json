@@ -1,0 +1,94 @@
+{
+  "project_name": "ChatEmbed AI",
+  "theme": "Light",
+  "archetype": "4 (Swiss & High-Contrast)",
+  "design_philosophy": "Objective, strict functional beauty, authority. Heavy use of stark contrast (pure white/black/grey) with one electric accent color (European Blue). Generous padding (p-8 to p-12) to create breathing room, strict grids, zero unnecessary gradients. The aesthetic represents GDPR-compliant, serious European business software.",
+  "colors": {
+    "primary": "#002FA7",
+    "primary_hover": "#0040D6",
+    "secondary": "#0A0A0A",
+    "accent_danger": "#E60000",
+    "background": "#FFFFFF",
+    "surface": "#F9FAFB",
+    "surface_hover": "#F3F4F6",
+    "border": "#E5E7EB",
+    "text": {
+      "main": "#0A0A0A",
+      "muted": "#4B5563",
+      "inverse": "#FFFFFF"
+    }
+  },
+  "typography": {
+    "heading_font": "Clash Display",
+    "body_font": "IBM Plex Sans",
+    "rules": {
+      "h1": "text-5xl lg:text-6xl font-black tracking-tighter leading-none",
+      "h2": "text-3xl lg:text-4xl font-bold tracking-tight leading-tight",
+      "h3": "text-xl lg:text-2xl font-bold tracking-tight",
+      "body": "text-base leading-relaxed",
+      "label": "text-xs font-bold uppercase tracking-[0.2em]"
+    }
+  },
+  "layout_and_spacing": {
+    "container_padding": "p-6 md:p-12",
+    "gap_large": "gap-12 md:gap-24",
+    "gap_medium": "gap-6 md:gap-8",
+    "border_radius": "rounded-none",
+    "shadows": {
+      "card": "shadow-none",
+      "floating": "shadow-[0_8px_32px_rgba(0,0,0,0.12)]"
+    },
+    "surface_styles": {
+      "dashboard_cards": "bg-white border border-gray-200 rounded-none shadow-sm hover:shadow-md transition-shadow duration-200 p-6",
+      "header": "bg-white/80 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-50",
+      "hero_overlay": "bg-white/30 backdrop-blur-md"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none px-6 py-3 font-bold transition-colors",
+      "secondary": "bg-transparent text-[#0A0A0A] border border-[#0A0A0A] hover:bg-[#F3F4F6] rounded-none px-6 py-3 font-bold transition-colors"
+    },
+    "inputs": "rounded-none border-gray-300 focus:ring-2 focus:ring-[#002FA7] focus:border-transparent px-4 py-3 bg-white",
+    "cards": "rounded-none border border-gray-200 bg-white p-6 md:p-8"
+  },
+  "motion": {
+    "hover": "transition-all duration-200 ease-in-out",
+    "entrance": "framer-motion initial opacity-0 y-4 animate to opacity-100 y-0 stagger 0.1s"
+  },
+  "media": {
+    "hero_image": "https://static.prod-images.emergentagent.com/jobs/319b291c-4ea8-4304-a1d6-a3c8fadc868b/images/9318327fe29f10720f1968ff4311bc358026eddaae6f8b3fd3cd98b8f393602a.png",
+    "analytics_bg": "https://static.prod-images.emergentagent.com/jobs/319b291c-4ea8-4304-a1d6-a3c8fadc868b/images/d43679dfe582fe367d4567a35a0008e0bb13b1ab02ac3456e8a3a82fafd039a9.png",
+    "testimonials": [
+      "https://images.unsplash.com/photo-1773944449123-0089f239a4b3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwyfHxzbWFsbCUyMGJ1c2luZXNzJTIwb3duZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzYyMzY4Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1758887261865-a2b89c0f7ac5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzN8MHwxfHNlYXJjaHwxfHxzbWFsbCUyMGJ1c2luZXNzJTIwb3duZXIlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NzYyMzY4Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.pexels.com/photos/8422729/pexels-photo-8422729.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ],
+    "client_logos": [
+      "https://images.unsplash.com/photo-1618243329711-359c196ffb38?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwyfHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjBtaW5pbWFsaXN0aWN8ZW58MHx8fHwxNzc2MjM2ODI5fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1691440599496-4ae4378799eb?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjBtaW5pbWFsaXN0aWN8ZW58MHx8fHwxNzc2MjM2ODI5fDA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1638864616270-64041b699a50?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODB8MHwxfHNlYXJjaHw0fHx0ZWNoJTIwY29tcGFueSUyMGxvZ28lMjBtaW5pbWFsaXN0aWN8ZW58MHx8fHwxNzc2MjM2ODI5fDA&ixlib=rb-4.1.0&q=85"
+    ]
+  },
+  "icons_library": "lucide-react",
+  "key_features_instructions": {
+    "multilingual_toggle": "Language selector in the sticky header must support 15 European languages. Use a globe icon. Ensure the layout gracefully handles variable text lengths (German is typically 30% longer). Include logic for time-based greetings in German ('Guten Morgen', 'Guten Tag', 'Guten Abend') on the chatbot.",
+    "gdpr_compliance": "Cookie consent banner must be fixed to the bottom, highly visible, using stark contrast (Black bg, white text). It must explicitly detail cookies and tracking. Must provide 'Accept All' and 'Reject Non-Essential' buttons. Do not obscure the main CTA.",
+    "chatbot_creation": "Use a split-screen 'Control Room' Grid layout (Grid col-span-1 for settings/text area 'FAQ Input', col-span-2 for live chat preview widget).",
+    "embed_generator": "Use Shadcn Tabs for the embed code options (e.g., HTML, React, WordPress). Wrap the code block in a dark terminal-like surface (Archetype 5 styling) for retro-technical contrast.",
+    "pricing_page": "4-tier pricing grid (Free, Starter, Pro, Agency) in EUR. Highlight the 'Pro' tier with a solid #002FA7 border and slightly larger scale (Neumorphism The 'Tactile' Variant is BANNED, use Flat Solid + Border).",
+    "legal_pages": "Keep Impressum, Datenschutz, AGB, and AVV pages ultra-minimal. Just a narrow text column (max-w-3xl) centered, large bold H1, and standard body text. Strict left alignment for paragraphs.",
+    "privacy_center": "Needs strong visual cues for 'Delete Data' action (use Accent Danger #E60000). Group Data Export and Deletion into explicit card sections with 1px borders."
+  },
+  "instructions_to_main_agent": [
+    "Write components in .jsx or .js files. DO NOT output TypeScript (.tsx).",
+    "Strictly adhere to the color palette. Do not use generic gray if an element demands emphasis. Use pure white, deep black, and Klein Blue.",
+    "Use pure HTML + Tailwind for marketing sections (landing page) for layout freedom. Use customized Shadcn UI components for the Dashboard and app internals.",
+    "Implement 'Clash Display' for headings and 'IBM Plex Sans' for body text. Add font imports via Google Fonts or Fontsource.",
+    "Ensure ALL interactive elements (buttons, links, form inputs) have a 'data-testid' attribute (e.g. data-testid='login-submit-button').",
+    "Implement pure grid boundaries: Use 1px borders to segregate dashboard cards instead of relying purely on shadows. E1's Grid Borders approach.",
+    "For the hero section, use the provided hero_image with a subtle transparent overlay so the text pops. Max bg-white/40.",
+    "Never center text by default except for the main hero heading. Align left for form labels, standard paragraphs, and dashboard content.",
+    "Always wrap framer-motion animations carefully inside grid items, ensuring they don't break the CSS grid layout. Use align-self: stretch on grid children."
+  ]
+}

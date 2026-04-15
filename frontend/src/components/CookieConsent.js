@@ -36,8 +36,8 @@ export default function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[100]" data-testid="cookie-banner">
-      <div className="bg-[#0A0A0A] text-white">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-none" data-testid="cookie-banner">
+      <div className="bg-[#0A0A0A] text-white pointer-events-auto">
         {!showSettings ? (
           <div className="max-w-7xl mx-auto px-6 md:px-12 py-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <p className="text-sm leading-relaxed max-w-2xl">{t.cookie.text}</p>

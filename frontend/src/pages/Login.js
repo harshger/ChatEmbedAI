@@ -41,7 +41,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#F9FAFB]" data-testid="login-page">
       <Header />
-      <div className="flex items-center justify-center pt-32 pb-16 px-6">
+      <div className="flex items-center justify-center pt-32 pb-32 px-6">
         <div className="w-full max-w-md">
           <div className="border border-gray-200 bg-white p-8" data-testid="login-form">
             <h1 className="font-clash text-3xl font-bold tracking-tight text-[#0A0A0A] mb-8">{t.auth.login_title}</h1>

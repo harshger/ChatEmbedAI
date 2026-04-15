@@ -25,7 +25,9 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - Multilingual AI chatbot (15 European languages)
 - Stripe subscriptions with EUR pricing (4 tiers)
 
-## What's Been Implemented (April 15, 2026)
+## What's Been Implemented
+
+### Phase 1 — MVP (April 15, 2026)
 - [x] Landing page (German/English toggle) with hero, features, testimonials, trust section
 - [x] GDPR cookie consent banner (3 categories: necessary/analytics/marketing)
 - [x] Auth: Registration, Login, Google OAuth, session management
@@ -42,31 +44,44 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [x] Billing page with payment history
 - [x] Consent logging to MongoDB
 - [x] Rate limiting and plan message limits
-- [x] **Chatbot Templates (6 German business types)**: Bäckerei, Zahnarzt, Restaurant, Friseur, Immobilien, Anwalt
-- [x] **Standalone embed.js widget** served from /api/embed.js (self-contained, no framework deps)
-- [x] **Improved Stripe webhooks** with subscription lifecycle handling
-- [x] **Team management** page (Agency plan gated) with invite/remove
-- [x] **Template banner** on chatbot creation page linking to templates
-- [x] **CORS fix** for cross-origin auth (removed credentials:include, using Bearer tokens)
+
+### Phase 2 — Templates & Team (April 15, 2026)
+- [x] Chatbot Templates (6 German business types): Bäckerei, Zahnarzt, Restaurant, Friseur, Immobilien, Anwalt
+- [x] Standalone embed.js widget served from /api/embed.js (self-contained, no framework deps)
+- [x] Improved Stripe webhooks with subscription lifecycle handling
+- [x] Team management page (Agency plan gated) with invite/remove
+- [x] Template banner on chatbot creation page linking to templates
+- [x] CORS fix for cross-origin auth (removed credentials:include, using Bearer tokens)
+
+### Phase 3 — Auth Flows & Analytics (April 15, 2026)
+- [x] Email verification flow (double opt-in) with mocked emails + demo token display
+- [x] Password reset flow (forgot password → token → reset) with mocked emails
+- [x] Enhanced Analytics with recharts: messages/day bar chart, language distribution pie chart, peak hours bar chart, top 10 questions table, per-chatbot stats
+- [x] Forgot Password page (/forgot-password)
+- [x] Reset Password page (/reset-password?token=xxx)
+- [x] Verify Email page (/verify-email?token=xxx)
+- [x] Signup page shows verification notice with mock verify link
+- [x] Login page has "Forgot Password?" link
+- [x] /api/auth/me and /api/auth/login return email_verified field
 
 ## Prioritized Backlog
 
 ### P0 (Critical)
-- [ ] Email verification flow (double opt-in)
-- [ ] Password reset flow
+- All P0 items completed!
 
 ### P1 (High)
 - [ ] Local AI (Ollama) integration as primary AI engine
 - [ ] Invoice PDF generation (German tax compliant with §257 HGB)
 - [ ] Data retention jobs (auto-delete messages after 90 days)
 - [ ] Widget customization (colors, logo, branding removal for paid)
+- [ ] Stripe Checkout & Billing Portal wire-up (ensure UI triggers checkout correctly)
 
 ### P2 (Medium)
-- [ ] Advanced analytics (word cloud, peak hours, language pie chart)
 - [ ] CSV export for analytics
 - [ ] Docker Compose deployment setup for self-hosting
 - [ ] Nginx configuration
 - [ ] Domain whitelist per chatbot (CORS)
+- [ ] Chatbot-Analyse Enhancement (template usage statistics)
 
 ### P3 (Nice to have)
 - [ ] 2FA support
@@ -76,8 +91,8 @@ Build a complete SaaS web app called "ChatEmbed AI" — an AI-powered chatbot bu
 - [ ] More chatbot templates (Hotel, Autowerkstatt, Steuerberater)
 
 ## Next Tasks
-1. Implement email verification (double opt-in) flow
-2. Add password reset functionality
+1. Widget customization (colors, logo, branding removal for paid)
+2. Stripe Checkout & Billing Portal proper wire-up
 3. Build Ollama/local AI integration as primary engine
 4. Invoice PDF generation with German VAT
-5. More chatbot templates for additional industries
+5. Data retention jobs

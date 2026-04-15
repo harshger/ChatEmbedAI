@@ -1,8 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import PlainTextResponse
+from datetime import datetime, timezone
+import csv
+import io
+import uuid
+import logging
+
 from database import db
 from config import PLAN_LIMITS
 from auth_utils import get_current_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["analytics"])
 
 
@@ -94,6 +102,20 @@ async def get_analytics(user=Depends(get_current_user)):
             'user_messages': len([m for m in bot_msgs if m.get('role') == 'user']),
         })
 
+    # Unanswered questions
+    unanswered = await db.unanswered_questions.find(
+        {'user_id': user['user_id']}, {'_id': 0}
+    ).sort('created_at', -1).to_list(50)
+
+    # Satisfaction ratings
+    ratings = await db.ratings.find(
+        {'chatbot_id': {'$in': chatbot_ids}}, {'_id': 0}
+    ).to_list(10000)
+    total_ratings = len(ratings)
+    positive = len([r for r in ratings if r.get('rating', 0) > 0])
+    negative = len([r for r in ratings if r.get('rating', 0) < 0])
+    avg_rating = round((positive - negative) / total_ratings * 100, 1) if total_ratings > 0 else 0
+
     return {
         'messages_per_day': [{'date': k, 'count': v} for k, v in sorted(daily_counts.items())],
         'total_messages': len(messages),
@@ -102,4 +124,107 @@ async def get_analytics(user=Depends(get_current_user)):
         'language_distribution': [{'language': k, 'count': v} for k, v in sorted(language_counts.items(), key=lambda x: x[1], reverse=True)],
         'peak_hours': peak_hours,
         'chatbot_stats': chatbot_stats,
+        'unanswered_questions': unanswered,
+        'satisfaction': {
+            'total_ratings': total_ratings,
+            'positive': positive,
+            'negative': negative,
+            'avg_score': avg_rating,
+        },
     }
+
+
+@router.get("/analytics/export/csv")
+async def export_analytics_csv(user=Depends(get_current_user)):
+    plan = user.get('plan', 'free')
+    if plan not in ('pro', 'agency'):
+        raise HTTPException(status_code=403, detail="Analytics export requires Pro plan or higher")
+
+    chatbots = await db.chatbots.find({'user_id': user['user_id']}, {'_id': 0}).to_list(100)
+    chatbot_ids = [c['chatbot_id'] for c in chatbots]
+    chatbot_map = {c['chatbot_id']: c['business_name'] for c in chatbots}
+
+    messages = await db.messages.find({'chatbot_id': {'$in': chatbot_ids}}, {'_id': 0}).to_list(50000)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Messages per day
+    writer.writerow(['--- Messages Per Day ---'])
+    writer.writerow(['Date', 'Count'])
+    daily = {}
+    for msg in messages:
+        if msg.get('role') == 'user':
+            day = msg.get('created_at', '')[:10]
+            if day:
+                daily[day] = daily.get(day, 0) + 1
+    for day in sorted(daily.keys()):
+        writer.writerow([day, daily[day]])
+
+    writer.writerow([])
+
+    # Top questions
+    writer.writerow(['--- Top Questions ---'])
+    writer.writerow(['Question', 'Count'])
+    q_counts = {}
+    for msg in messages:
+        if msg.get('role') == 'user':
+            content = msg.get('content', '').strip()
+            if content and content != '[deleted]':
+                key = content[:100]
+                q_counts[key] = q_counts.get(key, 0) + 1
+    for q, c in sorted(q_counts.items(), key=lambda x: x[1], reverse=True)[:20]:
+        writer.writerow([q, c])
+
+    writer.writerow([])
+
+    # Chatbot stats
+    writer.writerow(['--- Chatbot Performance ---'])
+    writer.writerow(['Chatbot', 'Total Messages', 'User Messages'])
+    for bot in chatbots:
+        bot_msgs = [m for m in messages if m.get('chatbot_id') == bot['chatbot_id']]
+        user_msgs = [m for m in bot_msgs if m.get('role') == 'user']
+        writer.writerow([bot.get('business_name', ''), len(bot_msgs), len(user_msgs)])
+
+    writer.writerow([])
+
+    # Unanswered questions
+    unanswered = await db.unanswered_questions.find(
+        {'user_id': user['user_id']}, {'_id': 0}
+    ).sort('created_at', -1).to_list(100)
+    writer.writerow(['--- Unanswered Questions ---'])
+    writer.writerow(['Question', 'Chatbot', 'Date'])
+    for uq in unanswered:
+        writer.writerow([
+            uq.get('question', ''),
+            chatbot_map.get(uq.get('chatbot_id', ''), ''),
+            uq.get('created_at', '')[:10],
+        ])
+
+    writer.writerow([])
+
+    # Ratings
+    ratings = await db.ratings.find(
+        {'chatbot_id': {'$in': chatbot_ids}}, {'_id': 0}
+    ).to_list(10000)
+    pos = len([r for r in ratings if r.get('rating', 0) > 0])
+    neg = len([r for r in ratings if r.get('rating', 0) < 0])
+    writer.writerow(['--- Satisfaction ---'])
+    writer.writerow(['Total Ratings', 'Positive', 'Negative'])
+    writer.writerow([len(ratings), pos, neg])
+
+    csv_content = output.getvalue()
+
+    await db.consent_log.insert_one({
+        'consent_id': str(uuid.uuid4()),
+        'user_id': user['user_id'],
+        'consent_type': 'analytics_export',
+        'granted': True,
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    })
+
+    return PlainTextResponse(
+        csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=analytics-{datetime.now(timezone.utc).strftime('%Y%m%d')}.csv"}
+    )

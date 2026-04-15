@@ -4,24 +4,24 @@ import { useAuth } from '../lib/auth';
 import { useTranslation } from '../lib/i18n';
 import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu, MessageSquare } from 'lucide-react';
 
-const NAV_ITEMS = [
-  { path: '/dashboard', icon: LayoutDashboard, labelKey: 'Dashboard' },
-  { path: '/dashboard/new', icon: Plus, labelKey: 'New Chatbot' },
-  { path: '/dashboard/templates', icon: FileText, labelKey: 'Templates' },
-  { path: '/dashboard/verify-domain', icon: Globe, labelKey: 'Domain' },
-  { path: '/dashboard/conversations', icon: MessageSquare, labelKey: 'Conversations' },
-  { path: '/dashboard/analytics', icon: BarChart3, labelKey: 'Analytics' },
-  { path: '/dashboard/billing', icon: CreditCard, labelKey: 'Billing' },
-  { path: '/dashboard/ai-settings', icon: Cpu, labelKey: 'AI Engine' },
-  { path: '/dashboard/team', icon: Users, labelKey: 'Team' },
-  { path: '/account/privacy', icon: Shield, labelKey: 'Privacy' },
-];
-
 export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth();
-  const { lang, setLang } = useTranslation();
+  const { t, lang, setLang } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const NAV_ITEMS = [
+    { path: '/dashboard', icon: LayoutDashboard, label: t.sidebar.dashboard },
+    { path: '/dashboard/new', icon: Plus, label: t.sidebar.new_chatbot },
+    { path: '/dashboard/templates', icon: FileText, label: t.sidebar.templates },
+    { path: '/dashboard/verify-domain', icon: Globe, label: t.sidebar.domain },
+    { path: '/dashboard/conversations', icon: MessageSquare, label: t.sidebar.conversations },
+    { path: '/dashboard/analytics', icon: BarChart3, label: t.sidebar.analytics },
+    { path: '/dashboard/billing', icon: CreditCard, label: t.sidebar.billing },
+    { path: '/dashboard/ai-settings', icon: Cpu, label: t.sidebar.ai_engine },
+    { path: '/dashboard/team', icon: Users, label: t.sidebar.team },
+    { path: '/account/privacy', icon: Shield, label: t.sidebar.privacy },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -30,7 +30,6 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex" data-testid="dashboard-layout">
-      {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 fixed h-full z-40 hidden md:block" data-testid="sidebar">
         <div className="p-6 border-b border-gray-200">
           <Link to="/" className="flex items-center gap-2">
@@ -40,9 +39,9 @@ export default function DashboardLayout({ children }) {
         </div>
         <nav className="p-4 space-y-1">
           {NAV_ITEMS.map(item => (
-            <Link key={item.path} to={item.path} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${location.pathname === item.path ? 'bg-[#002FA7] text-white' : 'text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#0A0A0A]'}`} data-testid={`nav-${item.labelKey.toLowerCase().replace(' ', '-')}`}>
+            <Link key={item.path} to={item.path} className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${location.pathname === item.path ? 'bg-[#002FA7] text-white' : 'text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#0A0A0A]'}`} data-testid={`nav-${item.path.split('/').pop()}`}>
               <item.icon size={18} />
-              {item.labelKey}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -53,14 +52,11 @@ export default function DashboardLayout({ children }) {
           </button>
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2 text-sm text-[#E60000] hover:text-red-700 w-full" data-testid="logout-btn">
             <LogOut size={18} />
-            Logout
+            {t.sidebar.logout}
           </button>
         </div>
       </aside>
-
-      {/* Main content */}
       <main className="flex-1 md:ml-64">
-        {/* Mobile header */}
         <div className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-30">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-6 h-6 bg-[#002FA7] flex items-center justify-center"><span className="text-white font-black text-xs">CE</span></div>

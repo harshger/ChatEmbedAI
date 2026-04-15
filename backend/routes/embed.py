@@ -47,6 +47,10 @@ EMBED_JS_TEMPLATE = """
     #ce-widget-input button { border:none; color:white; padding:8px 12px; cursor:pointer; font-size:13px; }
     #ce-widget-footer { padding:6px 12px; border-top:1px solid #f3f4f6; display:flex; justify-content:space-between; font-size:10px; color:#9ca3af; }
     #ce-widget-footer a { color:#002FA7; text-decoration:none; }
+    .ce-rating { display:flex; gap:4px; margin-top:4px; }
+    .ce-rating button { background:none; border:1px solid #e5e7eb; padding:2px 6px; cursor:pointer; font-size:12px; border-radius:2px; transition:all 0.15s; }
+    .ce-rating button:hover { background:#f3f4f6; }
+    .ce-rating button.ce-rated { border-color:#002FA7; background:#002FA7; color:white; }
     @media(max-width:480px) { #ce-widget-window { bottom:0; right:0; left:0; width:100%; height:100%; } }
   `;
   document.head.appendChild(style);
@@ -148,12 +152,33 @@ EMBED_JS_TEMPLATE = """
   win.appendChild(footerDiv);
   document.body.appendChild(win);
 
-  function addMessage(role, text) {
+  function addMessage(role, text, msgId) {
     var div = document.createElement('div');
     div.className='ce-msg ce-msg-'+(role==='user'?'user':'bot');
     if(role==='user') div.style.background=color;
     div.textContent=text;
     msgDiv.appendChild(div);
+    if(role==='assistant' && msgId) {
+      var ratingDiv = document.createElement('div');
+      ratingDiv.className='ce-rating';
+      var upBtn = document.createElement('button');
+      upBtn.innerHTML='&#x1F44D;';
+      upBtn.title='Helpful';
+      var downBtn = document.createElement('button');
+      downBtn.innerHTML='&#x1F44E;';
+      downBtn.title='Not helpful';
+      function sendRating(val, btn, other) {
+        btn.classList.add('ce-rated');
+        other.disabled=true;
+        other.style.opacity='0.4';
+        fetch(apiBase+'/api/chat/rate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chatbot_id:chatbotId,session_id:state.sessionId,message_id:msgId,rating:val})});
+      }
+      upBtn.onclick=function(){sendRating(1,upBtn,downBtn)};
+      downBtn.onclick=function(){sendRating(-1,downBtn,upBtn)};
+      ratingDiv.appendChild(upBtn);
+      ratingDiv.appendChild(downBtn);
+      msgDiv.appendChild(ratingDiv);
+    }
     msgDiv.scrollTop=msgDiv.scrollHeight;
   }
 
@@ -171,7 +196,8 @@ EMBED_JS_TEMPLATE = """
     fetch(apiBase+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chatbot_id:chatbotId,message:text,session_id:state.sessionId,history:state.messages.slice(0,-1),widget_consent:true})}).then(function(r){return r.json()}).then(function(d){
       typingDiv.remove();
       var resp=d.response||'Error';
-      addMessage('assistant',resp);
+      var msgId=d.message_id||'';
+      addMessage('assistant',resp,msgId);
       state.messages.push({role:'assistant',content:resp});
     }).catch(function(){
       typingDiv.remove();

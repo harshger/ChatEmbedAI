@@ -22,9 +22,9 @@ export default function Dashboard() {
 
   const greeting = () => {
     const h = new Date().getHours();
-    if (h < 12) return 'Guten Morgen';
-    if (h < 18) return 'Guten Tag';
-    return 'Guten Abend';
+    if (h < 12) return t.dashboard.greeting_morning;
+    if (h < 18) return t.dashboard.greeting_afternoon;
+    return t.dashboard.greeting_evening;
   };
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure?')) return;
+    if (!window.confirm(t.dashboard.confirm_delete)) return;
     try {
       await api.deleteChatbot(id);
       setChatbots(prev => prev.filter(c => c.chatbot_id !== id));
@@ -95,7 +95,7 @@ export default function Dashboard() {
               <div className="w-10 h-10 bg-[#002FA7] flex items-center justify-center flex-shrink-0"><Mail size={20} className="text-white" /></div>
               <div>
                 <p className="font-bold text-sm text-[#0A0A0A]">{t.auth.verify_banner}</p>
-                <p className="text-xs text-[#4B5563]">Check your inbox or use the button to verify.</p>
+                <p className="text-xs text-[#4B5563]">{t.dashboard.verify_inbox_hint}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -125,11 +125,11 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 bg-yellow-500 flex items-center justify-center flex-shrink-0"><AlertTriangle size={20} className="text-white" /></div>
                 <div>
-                  <p className="font-bold text-sm text-yellow-900">Domain not verified</p>
-                  <p className="text-xs text-yellow-700">{user.domain ? `Verify ${user.domain} to activate your chatbot widget.` : 'Set your website URL and verify your domain.'}</p>
+                  <p className="font-bold text-sm text-yellow-900">{t.dashboard.domain_not_verified}</p>
+                  <p className="text-xs text-yellow-700">{user.domain ? t.dashboard.domain_verify_hint.replace('{domain}', user.domain) : t.dashboard.domain_set_hint}</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-yellow-800 flex-shrink-0">Verify Now &rarr;</span>
+              <span className="text-xs font-bold text-yellow-800 flex-shrink-0">{t.dashboard.verify_now} &rarr;</span>
             </div>
           </Link>
         )}
@@ -179,8 +179,8 @@ export default function Dashboard() {
           <Progress value={Math.min(usagePercent, 100)} className={`h-2 rounded-none ${usagePercent >= 95 ? '[&>div]:bg-red-500' : usagePercent >= 70 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-[#002FA7]'}`} />
           {usagePercent >= 80 && (
             <p className="text-xs text-[#4B5563] mt-2">
-              {usagePercent >= 95 ? 'Limit almost reached!' : 'Running low on messages.'}{' '}
-              <Link to="/pricing" className="text-[#002FA7] underline font-bold">Upgrade plan</Link>
+              {usagePercent >= 95 ? t.dashboard.limit_almost : t.dashboard.limit_low}{' '}
+              <Link to="/pricing" className="text-[#002FA7] underline font-bold">{t.dashboard.upgrade_plan}</Link>
             </p>
           )}
         </div>
@@ -200,7 +200,7 @@ export default function Dashboard() {
                 </div>
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-xs text-[#4B5563] mb-1">
-                    <span>{bot.message_count} messages</span>
+                    <span>{bot.message_count} {t.dashboard.messages_label}</span>
                     <Badge variant={bot.is_active ? 'default' : 'secondary'} className="text-xs rounded-none">
                       {bot.is_active ? t.dashboard.active : t.dashboard.inactive}
                     </Badge>
@@ -224,7 +224,7 @@ export default function Dashboard() {
           {chatbots.length === 0 && (
             <div className="col-span-full p-12 text-center" data-testid="empty-chatbots">
               <Bot size={48} className="text-gray-300 mx-auto mb-4" />
-              <p className="text-[#4B5563] mb-4">No chatbots yet.</p>
+              <p className="text-[#4B5563] mb-4">{t.dashboard.no_chatbots}</p>
               <Link to="/dashboard/new">
                 <Button className="bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none" data-testid="create-first-btn">{t.dashboard.newChatbot}</Button>
               </Link>

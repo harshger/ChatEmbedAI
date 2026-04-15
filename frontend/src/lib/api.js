@@ -76,6 +76,9 @@ export const api = {
 
   // Invoice PDF
   downloadInvoicePdf: (transactionId) => fetch(`${API}/billing/invoice/${transactionId}/pdf`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.blob(); }),
+
+  // Analytics CSV Export
+  exportAnalyticsCsv: () => fetch(`${API}/analytics/export/csv`, { headers: { ...getAuthHeaders() } }).then(r => { if (!r.ok) throw r; return r.text(); }),
 };
 
 export default api;

@@ -59,11 +59,11 @@ export default function PrivacyCenter() {
           <div className="p-8 bg-white border border-gray-200">
             <Download size={24} className="text-[#002FA7] mb-4" />
             <h3 className="font-bold text-[#0A0A0A] mb-2">{t.privacy_center.export_btn}</h3>
-            <p className="text-sm text-[#4B5563] mb-6">Export all your data as JSON.</p>
+            <p className="text-sm text-[#4B5563] mb-6">{t.privacy_center.export_desc}</p>
             <Button onClick={handleExport} disabled={exporting} variant="outline" className="rounded-none border-gray-300 font-bold" data-testid="export-data-btn">
-              {exporting ? '...' : exported ? <><CheckCircle size={14} className="mr-1 text-green-600" />Exported</> : t.privacy_center.export_btn}
+              {exporting ? '...' : exported ? <><CheckCircle size={14} className="mr-1 text-green-600" />{t.privacy_center.export_btn}</> : t.privacy_center.export_btn}
             </Button>
-            {exported && <p className="text-xs text-green-700 mt-2" data-testid="export-success-msg">Art. 20 DSGVO — Data exported successfully.</p>}
+            {exported && <p className="text-xs text-green-700 mt-2" data-testid="export-success-msg">{t.privacy_center.export_success}</p>}
           </div>
           <div className="p-8 bg-white border border-gray-200">
             <Trash2 size={24} className="text-[#E60000] mb-4" />
@@ -76,7 +76,7 @@ export default function PrivacyCenter() {
           <div className="p-8 bg-white border border-gray-200">
             <Settings size={24} className="text-[#002FA7] mb-4" />
             <h3 className="font-bold text-[#0A0A0A] mb-2">{t.privacy_center.consent_btn}</h3>
-            <p className="text-sm text-[#4B5563] mb-6">Manage your cookie preferences.</p>
+            <p className="text-sm text-[#4B5563] mb-6">{t.privacy_center.consent_desc}</p>
             <Button onClick={openCookieSettings} variant="outline" className="rounded-none border-gray-300 font-bold" data-testid="manage-consent-btn">
               {t.privacy_center.consent_btn}
             </Button>
@@ -93,7 +93,7 @@ export default function PrivacyCenter() {
               <p className="text-sm text-[#4B5563]">{t.privacy_center.type_confirm}</p>
               <Input value={confirmation} onChange={e => setConfirmation(e.target.value)} placeholder="LÖSCHEN" className="rounded-none border-gray-300" data-testid="delete-confirmation-input" />
               <div className="flex gap-3">
-                <Button onClick={() => setShowDelete(false)} variant="outline" className="rounded-none">Cancel</Button>
+                <Button onClick={() => setShowDelete(false)} variant="outline" className="rounded-none">{t.privacy_center.cancel}</Button>
                 <Button onClick={handleDelete} disabled={confirmation !== 'LÖSCHEN' || deleting} className="rounded-none bg-[#E60000] text-white hover:bg-red-700" data-testid="confirm-delete-btn">
                   {deleting ? '...' : t.privacy_center.delete_btn}
                 </Button>

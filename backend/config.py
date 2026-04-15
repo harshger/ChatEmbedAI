@@ -27,4 +27,12 @@ PLAN_PRICES = {
 MARKETING_USAGE_LIMITS = {
     'growth': 50,
     'agency': 999,
+    'trial': 2,
 }
+
+REFUND_TIERS = [
+    (0, 100),    # 0 analyses → 100% refund
+    (5, 75),     # 1-5 analyses → 75% refund
+    (15, 50),    # 6-15 analyses → 50% refund
+    (30, 25),    # 16-30 analyses → 25% refund
+]

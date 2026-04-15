@@ -266,13 +266,27 @@ async def check_growth_plan(user):
 
 async def check_usage_limit(user):
     plan = user.get('plan', 'free')
-    limit = MARKETING_USAGE_LIMITS.get(plan, 50)
+    # Trial users get only 2 runs
+    trial = await db.marketing_trials.find_one({'user_id': user['user_id']}, {'_id': 0})
+    is_trial = False
+    if plan not in ('growth', 'agency') and trial:
+        te = trial.get('trial_end', '')
+        if te and te > datetime.now(timezone.utc).isoformat():
+            is_trial = True
+
+    if is_trial:
+        limit = MARKETING_USAGE_LIMITS.get('trial', 2)
+    else:
+        limit = MARKETING_USAGE_LIMITS.get(plan, 50)
+
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
     count = await db.marketing_usage.count_documents({
         'user_id': user['user_id'],
         'created_at': {'$gte': month_start}
     })
     if count >= limit:
+        if is_trial:
+            raise HTTPException(status_code=429, detail=f"Testphase-Limit erreicht ({limit} Analysen). Bitte upgraden Sie für unbegrenzten Zugang.")
         raise HTTPException(status_code=429, detail=f"Monatliches Limit erreicht ({limit} Analysen)")
     return count, limit
 
@@ -289,21 +303,29 @@ async def get_skills(user=Depends(get_current_user)):
 @router.get("/usage")
 async def get_usage(user=Depends(get_current_user)):
     plan = user.get('plan', 'free')
-    limit = MARKETING_USAGE_LIMITS.get(plan, 50)
-    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
-    count = await db.marketing_usage.count_documents({
-        'user_id': user['user_id'],
-        'created_at': {'$gte': month_start}
-    })
     trial = await db.marketing_trials.find_one({'user_id': user['user_id']}, {'_id': 0})
     trial_active = False
     trial_end = None
+    is_trial = False
     if trial:
         te = trial.get('trial_end', '')
         if te and te > datetime.now(timezone.utc).isoformat():
             trial_active = True
             trial_end = te
-    return {'used': count, 'limit': limit, 'plan': plan, 'trial_active': trial_active, 'trial_end': trial_end}
+            if plan not in ('growth', 'agency'):
+                is_trial = True
+
+    if is_trial:
+        limit = MARKETING_USAGE_LIMITS.get('trial', 2)
+    else:
+        limit = MARKETING_USAGE_LIMITS.get(plan, 50)
+
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    count = await db.marketing_usage.count_documents({
+        'user_id': user['user_id'],
+        'created_at': {'$gte': month_start}
+    })
+    return {'used': count, 'limit': limit, 'plan': plan, 'trial_active': trial_active, 'trial_end': trial_end, 'is_trial': is_trial}
 
 
 @router.post("/start-trial")

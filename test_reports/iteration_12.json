@@ -1,0 +1,123 @@
+{
+  "summary": "Tested Anti-Abuse Protection features for 14-day EU refund. Backend: 14/14 tests passed (100%). Frontend: All cancel/revert flows working correctly. Trial limit of 2 runs displayed correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: GET /api/marketing/usage returns limit=2 and is_trial=true for trial users",
+    "Backend: GET /api/marketing/usage returns trial_active and trial_end fields",
+    "Backend: calculate_refund_percent(0) returns 100%",
+    "Backend: calculate_refund_percent(1-5) returns 75%",
+    "Backend: calculate_refund_percent(6-15) returns 50%",
+    "Backend: calculate_refund_percent(16-30) returns 25%",
+    "Backend: calculate_refund_percent(31+) returns 0%",
+    "Backend: GET /api/billing/cancel-preview rejects free plan users (400)",
+    "Backend: GET /api/billing/cancel-preview returns all required fields for paid users",
+    "Backend: POST /api/billing/cancel rejects free plan users (400)",
+    "Backend: POST /api/billing/revert-cancel fails when no pending cancellation (400)",
+    "Backend: MARKETING_USAGE_LIMITS['trial'] = 2",
+    "Backend: REFUND_TIERS correctly configured",
+    "Backend: POST /api/marketing/run returns 429 when trial limit exceeded",
+    "Backend: Cancel flow with growth plan - preview shows usage, refund amount, 14-day info",
+    "Backend: Cancel creates cancellation with pro-rata refund",
+    "Backend: Double cancellation prevented (400)",
+    "Backend: Revert cancellation works correctly",
+    "Backend: Refund tiers verified with actual usage counts (0, 1, 5, 6, 15, 16, 30, 31, 50)",
+    "Frontend: Billing page hides cancel button for free plan users",
+    "Frontend: Billing page shows 'Plan kündigen' link for paid plans",
+    "Frontend: Cancel section shows usage count (Genutzte Analysen)",
+    "Frontend: Cancel section shows 14-Tage Widerrufsrecht (EU) info",
+    "Frontend: Cancel section shows refund amount and percentage",
+    "Frontend: Service consent checkbox present and functional",
+    "Frontend: Confirm cancel and Keep plan buttons present",
+    "Frontend: Cancellation banner appears after cancel",
+    "Frontend: Revert button appears in cancellation banner",
+    "Frontend: Revert cancellation works - banner disappears",
+    "Frontend: Refund transaction (+99 EUR, refunded) shown in history",
+    "Frontend: Marketing page shows trial limit (0/2 Analysen)",
+    "Frontend: Marketing page shows '(Testphase — max. 2 Analysen)' message",
+    "Frontend: Trial badge shows 'Testphase aktiv — bis 2026-04-22'"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_anti_abuse_features.py",
+    "/app/test_reports/pytest/pytest_results_anti_abuse.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_anti_abuse_features.py"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 tests passed)",
+    "frontend": "100% (all cancel/revert flows working)"
+  },
+  "test_credentials": {
+    "email": "test@chatembed.de",
+    "password": "TestPass123!",
+    "trial_status": "Active until 2026-04-22",
+    "note": "User was temporarily upgraded to 'growth' plan for cancel flow testing, then restored to 'free'"
+  },
+  "seed_data_creation": "Temporarily upgraded test user to growth plan with billing_cycle_start within 14 days for cancel testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Anti-abuse features fully tested. Trial limit of 2 runs working. Pro-rata refund tiers (0=100%, 1-5=75%, 6-15=50%, 16-30=25%, 31+=0%) verified. Cancel/revert flow working in both backend and frontend. Stripe refunds are MOCKED (stored as negative payment_transactions).",
+  "mocked_apis": {
+    "stripe_refunds": "MOCKED - stored as negative payment_transactions with payment_status='refunded'",
+    "email_sending": "MOCKED - logged to console"
+  },
+  "features_verified": {
+    "trial_limit": {
+      "limit": 2,
+      "config_key": "MARKETING_USAGE_LIMITS['trial']",
+      "endpoint": "GET /api/marketing/usage",
+      "response_fields": ["used", "limit", "is_trial", "trial_active", "trial_end"],
+      "429_on_exceed": true
+    },
+    "refund_tiers": {
+      "config_key": "REFUND_TIERS",
+      "tiers": [
+        {"usage": "0", "refund": "100%"},
+        {"usage": "1-5", "refund": "75%"},
+        {"usage": "6-15", "refund": "50%"},
+        {"usage": "16-30", "refund": "25%"},
+        {"usage": "31+", "refund": "0%"}
+      ],
+      "function": "calculate_refund_percent(usage_count)"
+    },
+    "cancel_preview": {
+      "endpoint": "GET /api/billing/cancel-preview",
+      "response_fields": ["plan", "price", "usage_count", "within_14_days", "refund_percent", "refund_amount", "already_cancelled", "cancel_effective_date"],
+      "rejects_free_plan": true
+    },
+    "cancel": {
+      "endpoint": "POST /api/billing/cancel",
+      "request_body": {"service_consent": "boolean"},
+      "response_fields": ["ok", "cancellation_id", "refund_amount", "refund_percent", "effective_date", "message"],
+      "prevents_double_cancel": true,
+      "creates_refund_transaction": true
+    },
+    "revert_cancel": {
+      "endpoint": "POST /api/billing/revert-cancel",
+      "response_fields": ["ok", "message"],
+      "removes_refund_transaction": true,
+      "fails_when_no_pending": true
+    },
+    "frontend_billing": {
+      "hidden_cancel_link": "Plan kündigen (only for paid plans)",
+      "cancel_section_shows": ["usage_count", "14-day EU refund info", "refund_amount", "service_consent_checkbox"],
+      "cancellation_banner": "Shows after cancel with revert button",
+      "revert_button": "Removes cancellation and banner"
+    },
+    "frontend_marketing": {
+      "trial_limit_display": "0 / 2 Analysen diesen Monat verwendet",
+      "trial_message": "(Testphase — max. 2 Analysen)",
+      "trial_badge": "Testphase aktiv — bis 2026-04-22"
+    }
+  }
+}

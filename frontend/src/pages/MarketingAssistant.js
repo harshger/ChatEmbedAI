@@ -241,7 +241,13 @@ export default function MarketingAssistant() {
             {/* Usage Bar */}
             <div className={`border p-3 ${usage.used / usage.limit >= 0.8 ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`} data-testid="marketing-usage-bar">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-xs font-bold text-[#4B5563]">{usage.used} / {usage.limit} {t.marketing.usage_label}</p>
+                <p className="text-xs font-bold text-[#4B5563]">
+                  {usage.used} / {usage.limit} {t.marketing.usage_label}
+                  {usage.is_trial && <span className="ml-2 text-[#002FA7]">(Testphase — max. {usage.limit} Analysen)</span>}
+                </p>
+                {usage.is_trial && usage.used >= usage.limit && (
+                  <a href="/dashboard/billing" className="text-xs font-bold text-[#002FA7] hover:underline" data-testid="upgrade-link">Upgrade für alle 34 Skills</a>
+                )}
               </div>
               <Progress value={Math.min(usage.used / usage.limit * 100, 100)} className={`h-1.5 rounded-none ${usage.used / usage.limit >= 0.8 ? '[&>div]:bg-yellow-500' : '[&>div]:bg-[#002FA7]'}`} />
             </div>

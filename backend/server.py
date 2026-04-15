@@ -55,6 +55,11 @@ class ChatbotCreate(BaseModel):
     auto_detect_language: bool = True
     widget_color: str = '#6366f1'
     show_gdpr_notice: bool = True
+    widget_position: str = 'bottom-right'
+    widget_greeting: str = ''
+    hide_branding: bool = False
+    custom_logo_url: str = ''
+    widget_border_radius: str = 'rounded'
 
 class ChatbotUpdate(BaseModel):
     business_name: Optional[str] = None
@@ -64,6 +69,11 @@ class ChatbotUpdate(BaseModel):
     widget_color: Optional[str] = None
     show_gdpr_notice: Optional[bool] = None
     is_active: Optional[bool] = None
+    widget_position: Optional[str] = None
+    widget_greeting: Optional[str] = None
+    hide_branding: Optional[bool] = None
+    custom_logo_url: Optional[str] = None
+    widget_border_radius: Optional[str] = None
 
 class ChatMessage(BaseModel):
     chatbot_id: str
@@ -668,6 +678,11 @@ async def create_chatbot(data: ChatbotCreate, user=Depends(get_current_user)):
         'auto_detect_language': data.auto_detect_language,
         'widget_color': data.widget_color,
         'show_gdpr_notice': data.show_gdpr_notice,
+        'widget_position': data.widget_position,
+        'widget_greeting': data.widget_greeting,
+        'hide_branding': data.hide_branding,
+        'custom_logo_url': data.custom_logo_url,
+        'widget_border_radius': data.widget_border_radius,
         'is_active': True,
         'created_at': datetime.now(timezone.utc).isoformat(),
         'updated_at': datetime.now(timezone.utc).isoformat(),
@@ -822,6 +837,11 @@ async def get_public_chatbot(chatbot_id: str):
     chatbot = await db.chatbots.find_one({'chatbot_id': chatbot_id, 'is_active': True}, {'_id': 0, 'faq_content': 0})
     if not chatbot:
         raise HTTPException(status_code=404, detail="Chatbot not found")
+    # Check if owner has paid plan for branding removal
+    owner = await db.users.find_one({'user_id': chatbot.get('user_id')}, {'_id': 0})
+    plan = owner.get('plan', 'free') if owner else 'free'
+    chatbot['owner_plan'] = plan
+    chatbot['can_hide_branding'] = plan in ('starter', 'pro', 'agency')
     return chatbot
 
 # ---------- STRIPE PAYMENTS ----------
@@ -1400,6 +1420,86 @@ EMBED_JS_TEMPLATE = """
 @api_router.get("/embed.js")
 async def serve_embed_js():
     return PlainTextResponse(EMBED_JS_TEMPLATE, media_type="application/javascript")
+
+# ---------- AI ENGINE CONFIG ----------
+@api_router.get("/ai/config")
+async def get_ai_config(user=Depends(get_current_user)):
+    config = await db.ai_config.find_one({'user_id': user['user_id']}, {'_id': 0})
+    if not config:
+        config = {
+            'user_id': user['user_id'],
+            'engine': 'claude',
+            'ollama_url': '',
+            'ollama_model': 'llama3',
+        }
+    return {
+        'engine': config.get('engine', 'claude'),
+        'ollama_url': config.get('ollama_url', ''),
+        'ollama_model': config.get('ollama_model', 'llama3'),
+        'available_engines': ['claude', 'ollama'],
+    }
+
+@api_router.put("/ai/config")
+async def update_ai_config(request: Request, user=Depends(get_current_user)):
+    body = await request.json()
+    engine = body.get('engine', 'claude')
+    if engine not in ('claude', 'ollama'):
+        raise HTTPException(status_code=400, detail="Invalid engine. Use 'claude' or 'ollama'")
+    update = {
+        'user_id': user['user_id'],
+        'engine': engine,
+        'ollama_url': body.get('ollama_url', ''),
+        'ollama_model': body.get('ollama_model', 'llama3'),
+        'updated_at': datetime.now(timezone.utc).isoformat(),
+    }
+    await db.ai_config.update_one({'user_id': user['user_id']}, {'$set': update}, upsert=True)
+    return {"ok": True, "engine": engine}
+
+# ---------- BILLING MANAGEMENT ----------
+@api_router.get("/billing/plans")
+async def get_plans():
+    return {
+        'plans': [
+            {'id': 'free', 'name': 'Free', 'monthly': 0, 'yearly': 0, 'chatbots': 1, 'messages': 500, 'features': ['ChatEmbed Branding', 'DSGVO Widget']},
+            {'id': 'starter', 'name': 'Starter', 'monthly': 29, 'yearly': 290, 'chatbots': 3, 'messages': 2000, 'features': ['Remove Branding', 'Email Support']},
+            {'id': 'pro', 'name': 'Pro', 'monthly': 79, 'yearly': 790, 'chatbots': 10, 'messages': 10000, 'features': ['White-label', 'Analytics', 'AVV', 'Priority Support']},
+            {'id': 'agency', 'name': 'Agentur', 'monthly': 199, 'yearly': 1990, 'chatbots': 999, 'messages': 999999, 'features': ['White-label', 'Sub-Accounts', 'Onboarding', 'SLA']},
+        ]
+    }
+
+@api_router.post("/billing/change-plan")
+async def change_plan(request: Request, user=Depends(get_current_user)):
+    body = await request.json()
+    new_plan = body.get('plan')
+    if new_plan not in ('free', 'starter', 'pro', 'agency'):
+        raise HTTPException(status_code=400, detail="Invalid plan")
+    if new_plan == 'free':
+        await db.users.update_one({'user_id': user['user_id']}, {'$set': {'plan': 'free', 'updated_at': datetime.now(timezone.utc).isoformat()}})
+        await db.subscriptions.update_one({'user_id': user['user_id']}, {'$set': {'plan': 'free'}})
+        return {"ok": True, "plan": "free", "message": "Downgraded to free plan"}
+    origin_url = body.get('origin_url', '')
+    try:
+        from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+        price = PLAN_PRICES[new_plan]['monthly']
+        success_url = f"{origin_url}/dashboard/billing?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{origin_url}/dashboard/billing"
+        host_url = str(origin_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        checkout_request = CheckoutSessionRequest(
+            amount=price, currency="eur", success_url=success_url, cancel_url=cancel_url,
+            metadata={'user_id': user['user_id'], 'plan': new_plan, 'type': 'plan_change'}
+        )
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        await db.payment_transactions.insert_one({
+            'transaction_id': str(uuid.uuid4()), 'user_id': user['user_id'], 'session_id': session.session_id,
+            'plan': new_plan, 'amount': price, 'currency': 'eur', 'payment_status': 'initiated',
+            'metadata': {'plan': new_plan, 'type': 'plan_change'}, 'created_at': datetime.now(timezone.utc).isoformat(),
+        })
+        return {'url': session.url, 'session_id': session.session_id}
+    except Exception as e:
+        logger.error(f"Plan change error: {e}")
+        raise HTTPException(status_code=500, detail="Payment service error")
 
 # ---------- HEALTH ----------
 @api_router.get("/health")

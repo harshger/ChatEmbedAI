@@ -7,15 +7,18 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Switch } from '../components/ui/switch';
-import { Plus, MessageSquare, Bot, Activity, Globe, Edit, Code, Eye, Trash2 } from 'lucide-react';
+import { Plus, MessageSquare, Bot, Activity, Globe, Edit, Code, Eye, Trash2, Mail, CheckCircle } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 
 export default function Dashboard() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, checkAuth } = useAuth();
   const [stats, setStats] = useState(null);
   const [chatbots, setChatbots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyToken, setVerifyToken] = useState('');
+  const [verified, setVerified] = useState(false);
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -54,6 +57,28 @@ export default function Dashboard() {
     } catch {}
   };
 
+  const handleResendVerification = async () => {
+    if (!user?.email) return;
+    setVerifyLoading(true);
+    try {
+      const data = await api.resendVerification(user.email);
+      if (data.mock_token) setVerifyToken(data.mock_token);
+    } catch {}
+    setVerifyLoading(false);
+  };
+
+  const handleQuickVerify = async () => {
+    if (!verifyToken) return;
+    setVerifyLoading(true);
+    try {
+      await api.verifyEmail(verifyToken);
+      setVerified(true);
+      setVerifyToken('');
+      checkAuth();
+    } catch {}
+    setVerifyLoading(false);
+  };
+
   if (loading) {
     return <DashboardLayout><div className="flex items-center justify-center h-64"><div className="w-8 h-8 border-2 border-[#002FA7] border-t-transparent rounded-full animate-spin" /></div></DashboardLayout>;
   }
@@ -63,6 +88,36 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-8" data-testid="dashboard-page">
+        {/* Email Verification Banner */}
+        {user && !user.email_verified && !verified && (
+          <div className="border-2 border-[#002FA7] bg-[#002FA7]/5 p-5 flex items-center justify-between" data-testid="verify-email-banner">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-[#002FA7] flex items-center justify-center flex-shrink-0"><Mail size={20} className="text-white" /></div>
+              <div>
+                <p className="font-bold text-sm text-[#0A0A0A]">{t.auth.verify_banner}</p>
+                <p className="text-xs text-[#4B5563]">Check your inbox or use the button to verify.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {verifyToken ? (
+                <Button onClick={handleQuickVerify} disabled={verifyLoading} className="bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none px-4 py-2 text-xs font-bold" data-testid="quick-verify-btn">
+                  {verifyLoading ? '...' : t.auth.verify_btn}
+                </Button>
+              ) : (
+                <Button onClick={handleResendVerification} disabled={verifyLoading} variant="outline" className="rounded-none border-[#002FA7] text-[#002FA7] px-4 py-2 text-xs font-bold" data-testid="resend-verify-btn">
+                  {verifyLoading ? '...' : t.auth.verify_resend}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+        {verified && (
+          <div className="border border-green-300 bg-green-50 p-4 flex items-center gap-3" data-testid="verify-success-banner">
+            <CheckCircle size={20} className="text-green-600" />
+            <p className="text-sm font-bold text-green-700">{t.auth.verify_success}</p>
+          </div>
+        )}
+
         {/* Welcome */}
         <div className="flex items-center justify-between">
           <div>

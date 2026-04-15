@@ -26,6 +26,7 @@ import Team from "./pages/Team";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import VerifyEmail from "./pages/VerifyEmail";
+import AISettings from "./pages/AISettings";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -78,6 +79,7 @@ function AppRouter() {
         <Route path="/dashboard/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
         <Route path="/dashboard/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
         <Route path="/dashboard/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+        <Route path="/dashboard/ai-settings" element={<ProtectedRoute><AISettings /></ProtectedRoute>} />
         <Route path="/account/privacy" element={<ProtectedRoute><PrivacyCenter /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

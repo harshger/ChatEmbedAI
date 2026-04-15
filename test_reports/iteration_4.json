@@ -1,0 +1,109 @@
+{
+  "summary": "Completed comprehensive testing of ChatEmbed AI new features: Dashboard email verification banner, Widget customization, Billing management, and AI Engine settings. All 18 backend API tests passed (100%). All frontend UI flows working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "GET /api/ai/config - returns current AI engine configuration (claude/ollama)",
+    "GET /api/ai/config - returns 401 for unauthenticated requests",
+    "PUT /api/ai/config - updates engine to claude",
+    "PUT /api/ai/config - updates engine to ollama with settings (url, model)",
+    "PUT /api/ai/config - rejects invalid engine with 400",
+    "GET /api/billing/plans - returns 4 plans (free, starter, pro, agency) with correct structure",
+    "GET /api/billing/plans - pricing is correct (€0, €29, €79, €199)",
+    "POST /api/billing/change-plan - downgrades to free plan",
+    "POST /api/billing/change-plan - returns Stripe checkout URL for paid plans",
+    "POST /api/billing/change-plan - rejects invalid plan with 400",
+    "POST /api/billing/change-plan - returns 401 for unauthenticated requests",
+    "POST /api/auth/resend-verification - works for existing user",
+    "POST /api/auth/verify-email - rejects invalid token with 400",
+    "GET /api/auth/me - returns email_verified field",
+    "PUT /api/chatbots/{id} - updates and persists widget customization fields",
+    "GET /api/chatbot-public/{id} - returns owner_plan and can_hide_branding",
+    "GET /api/billing - returns subscription and transactions",
+    "Dashboard shows email verification banner for unverified users",
+    "Dashboard hides verification banner for verified users",
+    "Verification banner 'Resend' button calls /api/auth/resend-verification and gets mock_token",
+    "Verification banner 'Verify' button calls /api/auth/verify-email with token",
+    "Verification success banner appears after verification",
+    "AI Settings page (/dashboard/ai-settings) loads correctly",
+    "AI Settings page shows Claude and Ollama engine cards",
+    "AI Settings page Ollama config section appears when Ollama is selected",
+    "AI Settings page has Ollama URL input and model select",
+    "AI Settings page has Save AI Settings button",
+    "Billing page (/dashboard/billing) loads correctly",
+    "Billing page shows current plan card with FREE badge",
+    "Billing page shows plan comparison grid with 4 plans",
+    "Billing page shows upgrade buttons for paid plans",
+    "Billing page shows payment history (Rechnungen)",
+    "ChatbotEdit page has 4 tabs: Edit, Widget Design, Embed Code, Preview",
+    "Widget Design tab has color picker and hex input",
+    "Widget Design tab has 7 quick color buttons",
+    "Widget Design tab has corner style dropdown",
+    "Widget Design tab has position dropdown",
+    "Widget Design tab has greeting input",
+    "Widget Design tab has logo URL input",
+    "Widget Design tab has branding removal section (locked for free plan)",
+    "Widget Design tab has Save Widget Settings button",
+    "Sidebar has AI Engine link"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/pytest_results_new_features.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "email": "test@chatembed.de",
+    "password": "TestPass123!"
+  },
+  "seed_data_creation": "Temporarily set email_verified=False for test user to test verification banner, then verified via UI flow",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All new features (dashboard verification banner, widget customization, billing management, AI settings) are working correctly. Email sending is MOCKED - tokens are returned in API responses for demo mode. Test user is on free plan. Branding removal is correctly locked for free plan users. Stripe checkout creates real sessions but with test keys.",
+  "mocked_apis": {
+    "email_delivery": "Email sending is mocked - verification tokens are returned directly in API responses (mock_token) for demo/testing purposes",
+    "stripe_checkout": "Stripe checkout creates real sessions but with test keys (sk_test_emergent)"
+  },
+  "features_tested": {
+    "dashboard_verification_banner": {
+      "status": "WORKING",
+      "description": "Shows banner for unverified users, hides for verified users, resend button gets mock_token, verify button verifies email"
+    },
+    "ai_settings": {
+      "status": "WORKING",
+      "endpoints": ["GET /api/ai/config", "PUT /api/ai/config"],
+      "ui_page": "/dashboard/ai-settings",
+      "features": ["Claude engine card", "Ollama engine card", "Ollama config section", "Save button"]
+    },
+    "billing_management": {
+      "status": "WORKING",
+      "endpoints": ["GET /api/billing/plans", "POST /api/billing/change-plan"],
+      "ui_page": "/dashboard/billing",
+      "features": ["Current plan card", "Plan comparison grid", "Upgrade/downgrade buttons", "Payment history"]
+    },
+    "widget_customization": {
+      "status": "WORKING",
+      "endpoints": ["PUT /api/chatbots/{id}", "GET /api/chatbot-public/{id}"],
+      "ui_page": "/dashboard/chatbot/{id}?tab=widget",
+      "features": ["Color picker", "Quick colors", "Corner style", "Position", "Greeting", "Logo URL", "Branding removal (gated)"]
+    },
+    "sidebar_ai_engine_link": {
+      "status": "WORKING",
+      "description": "AI Engine link present in sidebar navigation"
+    }
+  }
+}

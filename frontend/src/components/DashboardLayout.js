@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from '../lib/i18n';
-import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate } from 'lucide-react';
+import { LayoutDashboard, Plus, BarChart3, CreditCard, FileText, Shield, LogOut, Globe, Users, BookTemplate, Cpu } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, labelKey: 'Dashboard' },
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { path: '/dashboard/templates', icon: FileText, labelKey: 'Templates' },
   { path: '/dashboard/analytics', icon: BarChart3, labelKey: 'Analytics' },
   { path: '/dashboard/billing', icon: CreditCard, labelKey: 'Billing' },
+  { path: '/dashboard/ai-settings', icon: Cpu, labelKey: 'AI Engine' },
   { path: '/dashboard/team', icon: Users, labelKey: 'Team' },
   { path: '/account/privacy', icon: Shield, labelKey: 'Privacy' },
 ];

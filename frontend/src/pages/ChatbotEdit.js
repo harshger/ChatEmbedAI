@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation, LANGUAGES } from '../lib/i18n';
+import { useAuth } from '../lib/auth';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -9,7 +10,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Switch } from '../components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Paintbrush, Lock } from 'lucide-react';
 import DashboardLayout from '../components/DashboardLayout';
 import ChatWidgetPreview from '../components/ChatWidgetPreview';
 
@@ -17,11 +18,14 @@ export default function ChatbotEdit() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [chatbot, setChatbot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'edit');
+
+  const isPaidPlan = user && ['starter', 'pro', 'agency'].includes(user.plan);
 
   useEffect(() => {
     api.getChatbot(id).then(data => { setChatbot(data); setLoading(false); }).catch(() => setLoading(false));
@@ -58,6 +62,7 @@ export default function ChatbotEdit() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="rounded-none border border-gray-200 bg-white mb-8" data-testid="edit-tabs">
             <TabsTrigger value="edit" className="rounded-none data-[state=active]:bg-[#002FA7] data-[state=active]:text-white">{t.dashboard.edit}</TabsTrigger>
+            <TabsTrigger value="widget" className="rounded-none data-[state=active]:bg-[#002FA7] data-[state=active]:text-white">Widget Design</TabsTrigger>
             <TabsTrigger value="embed" className="rounded-none data-[state=active]:bg-[#002FA7] data-[state=active]:text-white">{t.embed.title}</TabsTrigger>
             <TabsTrigger value="preview" className="rounded-none data-[state=active]:bg-[#002FA7] data-[state=active]:text-white">{t.dashboard.preview}</TabsTrigger>
           </TabsList>
@@ -89,15 +94,109 @@ export default function ChatbotEdit() {
                   <Label className="text-sm">{t.chatbot.gdpr_notice}</Label>
                   <Switch checked={chatbot.show_gdpr_notice} onCheckedChange={v => setChatbot(c => ({ ...c, show_gdpr_notice: v }))} />
                 </div>
-                <div>
-                  <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Widget Color</Label>
-                  <Input type="color" value={chatbot.widget_color} onChange={e => setChatbot(c => ({ ...c, widget_color: e.target.value }))} className="w-16 h-10 p-1 rounded-none" />
-                </div>
                 <Button onClick={handleSave} disabled={saving} className="bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none px-8 py-3 font-bold" data-testid="save-chatbot-btn">
                   {saving ? '...' : t.chatbot.save}
                 </Button>
               </div>
               <div className="lg:col-span-2 sticky top-24">
+                <ChatWidgetPreview businessName={chatbot.business_name} color={chatbot.widget_color} showGdpr={chatbot.show_gdpr_notice} chatbotId={chatbot.chatbot_id} interactive />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Widget Customization Tab */}
+          <TabsContent value="widget">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <div className="lg:col-span-3 space-y-6">
+                {/* Colors & Appearance */}
+                <div className="border border-gray-200 bg-white p-8 space-y-6" data-testid="widget-customization">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Paintbrush size={20} className="text-[#002FA7]" />
+                    <h2 className="font-clash text-xl font-bold text-[#0A0A0A]">Widget Appearance</h2>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Primary Color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input type="color" value={chatbot.widget_color || '#6366f1'} onChange={e => setChatbot(c => ({ ...c, widget_color: e.target.value }))} className="w-12 h-10 p-1 rounded-none border-gray-300" data-testid="widget-color-picker" />
+                        <Input value={chatbot.widget_color || '#6366f1'} onChange={e => setChatbot(c => ({ ...c, widget_color: e.target.value }))} className="rounded-none border-gray-300 font-mono text-sm" data-testid="widget-color-hex" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Quick Colors</Label>
+                      <div className="flex gap-2">
+                        {['#002FA7', '#6366f1', '#059669', '#dc2626', '#0891b2', '#7c3aed', '#0A0A0A'].map(c => (
+                          <button key={c} onClick={() => setChatbot(prev => ({ ...prev, widget_color: c }))} className="w-8 h-8 border border-gray-200 hover:scale-110 transition-transform" style={{ backgroundColor: c }} data-testid={`quick-color-${c.slice(1)}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Corner Style</Label>
+                    <Select value={chatbot.widget_border_radius || 'rounded'} onValueChange={v => setChatbot(c => ({ ...c, widget_border_radius: v }))}>
+                      <SelectTrigger className="rounded-none border-gray-300 w-48" data-testid="border-radius-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sharp">Sharp (Square)</SelectItem>
+                        <SelectItem value="rounded">Rounded</SelectItem>
+                        <SelectItem value="pill">Pill</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Widget Position</Label>
+                    <Select value={chatbot.widget_position || 'bottom-right'} onValueChange={v => setChatbot(c => ({ ...c, widget_position: v }))}>
+                      <SelectTrigger className="rounded-none border-gray-300 w-48" data-testid="position-select"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                        <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Welcome Greeting</Label>
+                    <Input value={chatbot.widget_greeting || ''} onChange={e => setChatbot(c => ({ ...c, widget_greeting: e.target.value }))} placeholder="e.g., Hallo! Wie kann ich Ihnen helfen?" className="rounded-none border-gray-300" data-testid="widget-greeting-input" />
+                    <p className="text-xs text-[#4B5563] mt-1">Shown as first message when chat opens</p>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-2 block">Custom Logo URL</Label>
+                    <Input value={chatbot.custom_logo_url || ''} onChange={e => setChatbot(c => ({ ...c, custom_logo_url: e.target.value }))} placeholder="https://your-domain.com/logo.png" className="rounded-none border-gray-300" data-testid="widget-logo-input" />
+                    <p className="text-xs text-[#4B5563] mt-1">Display your logo in the widget header</p>
+                  </div>
+                </div>
+
+                {/* Branding Removal */}
+                <div className="border border-gray-200 bg-white p-8" data-testid="branding-section">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-[#0A0A0A] mb-1">Hide "Powered by ChatEmbed AI"</h3>
+                      <p className="text-xs text-[#4B5563]">
+                        {isPaidPlan ? 'Remove the ChatEmbed branding from your widget.' : 'Available on Starter plan and above.'}
+                      </p>
+                    </div>
+                    {isPaidPlan ? (
+                      <Switch checked={chatbot.hide_branding || false} onCheckedChange={v => setChatbot(c => ({ ...c, hide_branding: v }))} data-testid="hide-branding-toggle" />
+                    ) : (
+                      <div className="flex items-center gap-2 text-[#4B5563]">
+                        <Lock size={16} />
+                        <span className="text-xs font-bold">Upgrade</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <Button onClick={handleSave} disabled={saving} className="bg-[#002FA7] text-white hover:bg-[#0040D6] rounded-none px-8 py-3 font-bold" data-testid="save-widget-btn">
+                  {saving ? '...' : 'Save Widget Settings'}
+                </Button>
+              </div>
+
+              {/* Live Preview */}
+              <div className="lg:col-span-2 sticky top-24">
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#4B5563] mb-4">Live Preview</p>
                 <ChatWidgetPreview businessName={chatbot.business_name} color={chatbot.widget_color} showGdpr={chatbot.show_gdpr_notice} chatbotId={chatbot.chatbot_id} interactive />
               </div>
             </div>

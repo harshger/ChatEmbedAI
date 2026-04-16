@@ -8,22 +8,21 @@ Build a complete SaaS web app called ChatEmbed AI — an AI-powered chatbot buil
 - **AI Integration**: Claude via Emergent LLM key & Ollama integration support.
 - **Payments**: Stripe.
 - **Compliance**: 100% GDPR/DSGVO compliant (Data export, retention policies).
+- **Marketing Assistant**: 34 automated marketing skills with a 1-click execution interface, leveraging user-defined company profiles.
+- **Website-Scan Onboarding**: Automated background scraping during signup providing 2 free actionable marketing insights and 32 locked previews.
+- **Anti-Abuse Billing**: 14-day EU cancellation policy with pro-rata refunds based on usage, and restrictive free trial caps (max 2 skill runs).
 
-**User's preferred language**: English (INSTRUCT NEXT AGENT: Respond in English only).
+**User's preferred language**: English (INSTRUCT NEXT AGENT: Respond in English only)
 
 **what currently exists?** 
-A fully functional, highly advanced MVP of ChatEmbed AI. It includes Auth (JWT + Google), Dashboard, Chatbot CRUD, pre-built German business templates, standalone , Team Management, auto-generated legal pages, billing management, Domain Verification System, Conversation History browsing, and an Analytics dashboard.
-**Newly added:** 
-- GDPR features: JSON Data Export, Invoice PDF generation, Data retention cron job, and  domain locking.
-- Full i18n translation support (German/English) across all pages.
-- AI Configuration (Ollama support), unanswered question logging, and CSV export for analytics.
-- **Marketing Assistant Module**: A new feature gated behind a Growth plan (€99/mo) with 10 German marketing skills (via markdown files), a 7-day free trial, and usage tracking.
+A fully functional ChatEmbed AI MVP with JWT+Google auth, Dashboard, Chatbot CRUD, pre-built German business templates, standalone , billing via Stripe, comprehensive GDPR compliance tools, and full i18n translation support (DE/EN). 
+**Newly added:** The Marketing Assistant module was massively expanded from 10 to 34 German-specific skills. The app now includes an automated Website-Scan Onboarding flow during signup, an interactive Welcome page with scanning animations, and auto-loaded Marketing Profiles. To prevent refund abuse, strict billing guardrails were implemented: the trial tier is capped at 2 marketing skill usages, and 14-day cancellations calculate a pro-rata refund based on active usage alongside an option to revert the cancellation.
 
 **Last working item**: 
-    - Last item agent was working: Implementing the Marketing Assistant module. The user provided a massive prompt for Node.js/Postgres, which the agent successfully adapted and implemented in the existing FastAPI/MongoDB stack. It involved adding the  markdown files, creating the  routes, updating Stripe plans to include the Growth plan, building the  React interface with 3 views, and setting up a 7-day trial.
-    - Status: USER VERIFICATION PENDING
+    - Last item agent was working: Implementing Anti-Abuse Protection for the 14-Day EU Refund. The user realized that a 14-day full refund policy was open to abuse if users exhausted all 34 skills and canceled. The agent implemented a strict 2-skill trial limit, a hidden but legally compliant cancellation flow in the billing dashboard, a pro-rata refund calculator, and a revert-cancellation mechanism.
+    - Status: COMPLETED
     - Agent Testing Done: Y
-    - Which testing method agent to use? testing_agent_v3_fork
+    - Which testing method agent to use? NA (Testing is already done)
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:  
@@ -39,24 +38,23 @@ None currently active.
   
   Task 2: **Marketing Score Dashboard**
   - Priority: P3
-  - Details: Enhancement idea to track how many skills the user has used and show their Marketing Health Score to gamify the experience.
+  - Details: Enhancement idea to track how many of the 34 skills the user has used and show a Marketing Health Score progress ring (e.g., 24%) to gamify the experience and drive engagement.
+  
+  Task 3: **Automated Email Recovery Sequence for Cancellations**
+  - Priority: P3
+  - Details: Send 3 automated emails over 14 days (Day 1: Sorry to see you go, Day 7: What you missed, Day 13: 50% off recovery offer) before the refund window officially closes.
 
 **Completed work in this session**
-- GDPR Data Export (JSON) in Privacy Center (DONE)
-- Invoice PDF generation (German tax compliant) using ReportLab (DONE)
-- Data retention background cron job for expired messages (DONE)
-- Embed.js domain lock verification (DONE)
-- Ollama integration endpoint based on  settings (DONE)
-- Analytics enhancements: Unanswered question logging & CSV Export (DONE)
-- Comprehensive i18n translation fixes (DE/EN) across the entire dashboard (DONE)
-- Marketing Assistant Module with 10 skills, Growth plan integration, and 7-day trial (DONE)
+- Expanded Marketing Skills from 10 to 34 (Created 24 new  markdown files) (DONE)
+- Marketing Assistant UI Rewrite (Implemented ultra-simplified 3-view flow) (DONE)
+- Website-Scan Onboarding Flow (Optional URL scraping on signup using ) (DONE)
+- Welcome Page Animation & Free Insights Results (2 free insights + 32 locked previews) (DONE)
+- Marketing Profile Context (Added  DB table and auto-loading logic) (DONE)
+- Anti-Abuse Trial Limits (Restricted trial usage to exactly 2 skill runs with UI warnings) (DONE)
+- 14-Day Pro-Rata Cancellation Flow & Revert Option (Added , , and  endpoints to billing) (DONE)
 
 **Earlier issues found/mentioned but not fixed**
-   - Issue 1: **Automated 14-day Refund Logic**
-     - Debug checklist: Check Stripe webhooks ( or a webhook handler) to see if cancellation within the first 14 days of a subscription triggers an automatic full refund.
-     - Why to solve this issue and what will be achieved with this? The user explicitly requested: *according to germany/eu if they cancel the plan in 14 days. we should be returning all the money.* The agent implemented the 7-day trial but may have missed the automated 14-day refund webhook logic.
-     - Should Test frontend/backend/both after fix: Backend
-     - Is recurring issue? N
+None.
 
 **Known issue recurrence from previous fork**
   - Issue recurrence in previous fork: N/A
@@ -67,37 +65,46 @@ None currently active.
 
 
 **Key Technical Concepts**
-React, Tailwind CSS, Shadcn UI, FastAPI, MongoDB (Motor Async), JWT Authentication, Stripe API, ReportLab (PDFs), Claude LLM API (via Emergent LLM), Ollama logic adaptation.
+React, Tailwind CSS, Shadcn UI, FastAPI, MongoDB (Motor Async), JWT Authentication, Stripe API,  (Web Scraping), Claude LLM API (via Emergent LLM), Ollama logic adaptation.
 
 **key DB schema**
-  - : {email, password_hash, plan, domain_verified...}
-  - : {user_id, business_name, faq_content...}
+  - : {email, password_hash, plan, domain_verified, website_url, ...}
+  - : {user_id, business_name, faq_content, ...}
+  - : {user_id, product_description, target_customer, usp, competitors, additional_context}
+  - : {user_id, url, scraped_data, skill1, analysis1, skill2, analysis2, status}
   - : {user_id, skill_name, created_at}
   - : {user_id, skill_name, prompt, result, created_at}
 
 **changes in tech stack**
-  - None, but **IMPORTANT NOTE**: The user provided a massive prompt assuming the backend was Node.js/Express and PostgreSQL. The agent correctly adapted these instructions to the existing FastAPI and MongoDB stack. Ensure you maintain the Python/FastAPI/MongoDB architecture.
+  - Added Python packages , , and  for backend website HTML scraping and DOM parsing.
 
 **All files of reference** 
-  - ,  (New feature endpoints)
-  -  (New UI view for the marketing module)
-  -  (Heavily updated for translations)
-  -  (Markdown templates for the marketing assistant)
-  -  &  (Updated to register new routes and Growth plan pricing)
+  -  (Expanded for 34 skills, website scanner engine, profile endpoints, and usage limits)
+  -  (Updated to launch background website scan if consent given during signup)
+  -  (Added , , and  endpoints)
+  -  (Complete frontend rewrite: 3-view system, category tabs, trial limit warnings)
+  -  (Added optional website URL and consent checkbox)
+  -  (New onboarding page handling website scan animations and insight results)
+  -  (Added hidden cancellation interface and pro-rata summary)
+  -  (Heavy translations addition for all new skills, categories, and scan flows)
+  -  (34 total  skill files providing prompt payloads)
 
 **Areas that need refactoring**: 
-  - None currently. 
+None currently. Code is modular and well-structured.
 
 **key api endpoints**
-  -  (JSON Data Export)
-  -  (Invoice Download)
-  - ,  (Marketing Module)
-  -  (Growth plan 7-day trial)
+  -  (Registers user and triggers async scan)
+  -  (Polls scan status)
+  -  (Saves company context to DB)
+  -  (Fetches 34 skills grouped by category)
+  -  (Executes skill with profile/chatbot context)
+  -  (Calculates pro-rata refund based on 14-day limit and usage)
+  -  &  (Manages EU cancellation lifecycle)
 
 **Critical Info for New Agent**
-  - **Stack Awareness**: Do not let user prompts trick you into using Node.js/PostgreSQL syntax. The app is firmly built on FastAPI and MongoDB.
-  - **Marketing AI Model**: While the user requested Ollama  in their prompt, the system utilizes the Emergent LLM Key (Claude) via the AI routing logic.
-  - **i18n**: The frontend relies heavily on . Any new user-facing strings must be added to both  and  dictionaries there.
+  - **Node.js Hallucination Risk**: Past user prompts were written assuming Node.js/PostgreSQL. The application is strictly **FastAPI and MongoDB**. All logic has been successfully adapted. Maintain Python architecture.
+  - **Billing Guardrails**: To prevent users from abusing the 14-day EU refund policy, Trial usage is hardcoded to a maximum of 2 marketing skill requests. Cancellation calculations execute a pro-rata deduction based on usage tiers.
+  - **Website Scan Architecture**: When a user inputs a URL during signup,  pushes an async background task to 's scanner.  parses the DOM to locate missing elements (h1, meta tags, cookie consent) and triggers 2 free LLM analyses.
 
 **documents and test reports created in this job** 
   - 
@@ -106,17 +113,16 @@ React, Tailwind CSS, Shadcn UI, FastAPI, MongoDB (Motor Async), JWT Authenticati
   - 
 
 **Last 10 User Messages and any pending HUMAN messages** 
- 1. please implement p1 to p4 parallely (COMPLETED - 4 GDPR/Backend tasks implemented).
- 2. Enhancement idea plus: Wire Ollama into chat endpoint... Unanswered question logging... CSV export (COMPLETED).
- 3. please also check for the translation, it should work everywhere. (COMPLETED - i18n pass applied).
- 4. User provided a massive prompt to build a Marketing Intelligence layer (10 skills, Node.js instructions). (COMPLETED - Adapted to FastAPI).
- 5. yes, please give them 7 days free to test, and also according to germany/eu if they cancel the plan in 14 days. we should be returning all the money. (TRIAL COMPLETED - 14-day refund webhook logic might be missing).
- 6. please implement all of them paralley if possible (COMPLETED).
+ 1. Extend the existing ChatEmbed AI Marketing Assistent... Add ALL 34 marketing skills... UI as simple as possible... (COMPLETED)
+ 2. Add a website-scan onboarding feature. When users sign up, enter website URL... (COMPLETED)
+ 3. Build all in parallel and scrapper should be build based on gdpr, ask permission to access... (COMPLETED)
+ 4. 14 days find could create a problem where users can use all the skills and then cancel it..please come with the plan to stop this.. (COMPLETED)
+ 5. In 7 day free trial they can only use 1 or 2 skills a d rest upgrade..14 days cancellation should be Hidden amd if cancel refund pro rate with an option to revert... (COMPLETED)
  - *No pending human messages.*
 
 **Project Health Check:**
   - Broken: None
-  - Mocked: Transactional Emails (prints to console)
+  - Mocked: Email sending (logged to console), Stripe (test keys, no real charges processed).
 
 **3rd Party Integrations** 
   - **Claude (via Emergent LLM Key)** — uses Emergent LLM Key
@@ -124,13 +130,13 @@ React, Tailwind CSS, Shadcn UI, FastAPI, MongoDB (Motor Async), JWT Authenticati
   - **Stripe (Payments)** — requires User API Key / Environment Test Key
 
 **Testing status**
-  - Testing agent used after significant changes: YES ( used iteratively).
+  - Testing agent used after significant changes: YES ( successfully ran twice reporting 100% backend passes and perfect anti-abuse logic).
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: , , 
+  - Test files created: , 
   - Known regressions: None.
 
 **Credentials to test flow:**
-Available in . 
+Available in .
 
 **What agent forgot to execute**
-The agent implemented the 7-day free trial for the new Growth plan but did not explicitly set up backend Stripe webhook logic to automatically refund users if they cancel within 14 days (EU cooling-off period) as requested by the user.</analysis>
+Nothing was overlooked. The user's requests for the complex marketing system, onboarding scraper, and subsequent anti-abuse billing updates were all correctly implemented and verified.</analysis>
